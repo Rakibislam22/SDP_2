@@ -1,3 +1,4 @@
+#chonoMate.py
 import tkinter
 import tkinter.messagebox
 import customtkinter
@@ -48,11 +49,11 @@ class App(customtkinter.CTk):
         self.entry = customtkinter.CTkEntry(self, placeholder_text="CTkEntry")
         self.entry.grid(row=3, column=1, columnspan=2, padx=(20, 0), pady=(20, 20), sticky="nsew")
 
-        self.main_button_1 = customtkinter.CTkButton(master=self, border_width=2, text_color=("gray10", "#DCE4EE"))
+        self.main_button_1 = customtkinter.CTkButton(master=self,fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
         self.main_button_1.grid(row=3, column=3, padx=(20, 20), pady=(20, 20), sticky="nsew")
 
         # Frame for time & date
-        self.container = customtkinter.CTkFrame(master=self, corner_radius=15)
+        self.container = customtkinter.CTkFrame(self)
         self.container.grid(row=0, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
 
 
@@ -72,7 +73,8 @@ class App(customtkinter.CTk):
             font=customtkinter.CTkFont("Helvetica", 18, "bold"),
             text="Loading...", 
         )
-        self.date_label.pack(pady=(0, 20))
+        
+
        
 
         # create textbox
@@ -104,13 +106,13 @@ class App(customtkinter.CTk):
         self.radiobutton_frame = customtkinter.CTkFrame(self)
         self.radiobutton_frame.grid(row=0, column=3, padx=(20, 20), pady=(20, 0), sticky="nsew")
         self.radio_var = tkinter.IntVar(value=0)
-        self.label_radio_group = customtkinter.CTkLabel(master=self.radiobutton_frame, text="CTkRadioButton Group:")
+        self.label_radio_group = customtkinter.CTkLabel(master=self.radiobutton_frame, text="CLOCK STYLE:")
         self.label_radio_group.grid(row=0, column=2, columnspan=1, padx=10, pady=10, sticky="")
-        self.radio_button_1 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, variable=self.radio_var, value=0)
+        self.radio_button_1 = customtkinter.CTkRadioButton(master=self.radiobutton_frame,text="Digital Clock", variable=self.radio_var, value=0,command=self.toggle_clock_view)
         self.radio_button_1.grid(row=1, column=2, pady=10, padx=20, sticky="n")
-        self.radio_button_2 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, variable=self.radio_var, value=1)
+        self.radio_button_2 = customtkinter.CTkRadioButton(master=self.radiobutton_frame,text="Analog Clock", variable=self.radio_var, value=1,command=self.toggle_clock_view)
         self.radio_button_2.grid(row=2, column=2, pady=10, padx=20, sticky="n")
-        self.radio_button_3 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, variable=self.radio_var, value=2)
+        self.radio_button_3 = customtkinter.CTkRadioButton(master=self.radiobutton_frame,text="Both" ,variable=self.radio_var, value=2,command=self.toggle_clock_view)
         self.radio_button_3.grid(row=3, column=2, pady=10, padx=20, sticky="n")
 
         # create slider and progressbar frame
@@ -157,7 +159,6 @@ class App(customtkinter.CTk):
         self.checkbox_1.select()
         self.scrollable_frame_switches[0].select()
         self.scrollable_frame_switches[4].select()
-        self.radio_button_3.configure(state="disabled")
         self.appearance_mode_optionemenu.set("Dark")
         self.scaling_optionemenu.set("100%")
         self.optionmenu_1.set("CTkOptionmenu")
@@ -176,19 +177,7 @@ class App(customtkinter.CTk):
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         customtkinter.set_appearance_mode(new_appearance_mode)
-        
-       
-        self.current_mode = customtkinter.get_appearance_mode().lower()
-        print("Requested:", new_appearance_mode)
-        print("CTk is actually using:", customtkinter.get_appearance_mode())
-        if customtkinter.get_appearance_mode().lower() == "dark":
-            self.container.configure(fg_color="#2b2b2b")
-            self.time_label.configure(text_color="white")
-            self.date_label.configure(text_color="white")
-        elif customtkinter.get_appearance_mode().lower() == "light":
-            self.container.configure(fg_color="white")
-            self.time_label.configure(text_color="black")
-            self.date_label.configure(text_color="black")                
+        self.analog_clock_frame.update_appearance()
         
 
 
@@ -199,13 +188,28 @@ class App(customtkinter.CTk):
     def sidebar_button_event(self):
         print("sidebar_button click")
     
+    def toggle_clock_view(self):
+        selected = self.radio_var.get()
+        if selected == 0:  # Digital only
+            self.time_label.pack(padx=20, pady=(20, 0))
+            self.date_label.pack(pady=(0, 20))
+            self.analog_clock_frame.pack_forget()
+        elif selected == 1:  # Analog only
+            self.time_label.pack_forget()
+            self.date_label.pack_forget()
+            self.analog_clock_frame.pack(pady=10)
+        elif selected == 2:  # Both
+            self.time_label.pack(padx=20, pady=(20, 0))
+            self.date_label.pack(pady=(0, 10))
+            self.analog_clock_frame.pack(pady=10)
+
+
     def update_time(self):
         self.current_time = time.strftime('%H:%M')
         self.current_date = datetime.now().strftime('%a, %d %B')
         self.time_label.configure(text=self.current_time)
         self.date_label.configure(text=self.current_date)
         app.after(1000, self.update_time)
-    
 
 if __name__ == "__main__":
     app = App()
