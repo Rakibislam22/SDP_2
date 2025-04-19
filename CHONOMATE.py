@@ -4,6 +4,7 @@ import tkinter.messagebox
 import customtkinter
 import time
 from datetime import datetime
+from analog_clock import AnalogClock
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -56,6 +57,10 @@ class App(customtkinter.CTk):
         self.container = customtkinter.CTkFrame(self)
         self.container.grid(row=0, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
 
+        self.analog = AnalogClock(self)
+        #self.analog.pack(padx=10, pady=10)
+        self.analog.grid(row=0, column=1, padx=(5, 0), pady=(5, 0), sticky="nsew")
+
 
 
         # Time label inside frame
@@ -73,6 +78,7 @@ class App(customtkinter.CTk):
             font=customtkinter.CTkFont("Helvetica", 18, "bold"),
             text="Loading...", 
         )
+        self.date_label.pack(pady=(0, 20))
         
 
        
@@ -193,15 +199,15 @@ class App(customtkinter.CTk):
         if selected == 0:  # Digital only
             self.time_label.pack(padx=20, pady=(20, 0))
             self.date_label.pack(pady=(0, 20))
-            self.analog_clock_frame.pack_forget()
+            self.analog.pack_forget()
         elif selected == 1:  # Analog only
             self.time_label.pack_forget()
             self.date_label.pack_forget()
-            self.analog_clock_frame.pack(pady=10)
+            self.analog.pack(pady=10)
         elif selected == 2:  # Both
             self.time_label.pack(padx=20, pady=(20, 0))
             self.date_label.pack(pady=(0, 10))
-            self.analog_clock_frame.pack(pady=10)
+            self.analog.pack(pady=10)
 
 
     def update_time(self):
