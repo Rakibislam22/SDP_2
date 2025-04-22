@@ -26,14 +26,15 @@ class App(customtkinter.CTk):
         self.sidebar_frame = customtkinter.CTkFrame(self, width=140, corner_radius=0)
         self.sidebar_frame.grid(row=0, column=0, rowspan=4, sticky="nsew")
         self.sidebar_frame.grid_rowconfigure(4, weight=1)
-        self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="CustomTkinter", font=customtkinter.CTkFont(size=20, weight="bold"))
+        self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="Clock Mode", font=customtkinter.CTkFont(size=20, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
-        self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event)
-        self.sidebar_button_1.grid(row=1, column=0, padx=20, pady=10)
-        self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event)
-        self.sidebar_button_2.grid(row=2, column=0, padx=20, pady=10)
-        self.sidebar_button_3 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event)
-        self.sidebar_button_3.grid(row=3, column=0, padx=20, pady=10)
+        self.switch_var = customtkinter.StringVar(value="on")
+        self.switch = customtkinter.CTkSwitch(self.sidebar_frame,text="24 Hours",font=customtkinter.CTkFont(size=15, weight="bold"),command=self.update_time,variable=self.switch_var,onvalue="on",offvalue="off")
+        self.switch.grid(row=1, column=0, padx=20, pady=10)
+        #self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event)
+        #self.sidebar_button_2.grid(row=2, column=0, padx=20, pady=10)
+        #self.sidebar_button_3 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event)
+        #self.sidebar_button_3.grid(row=3, column=0, padx=20, pady=10)
         self.appearance_mode_label = customtkinter.CTkLabel(self.sidebar_frame, text="Appearance Mode:", anchor="w")
         self.appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0))
         self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["Light", "Dark", "System"],
@@ -59,22 +60,32 @@ class App(customtkinter.CTk):
 
 
 
-        # Time label inside frame
+        self.time_frame = customtkinter.CTkFrame(self.container, fg_color="transparent")
+        self.time_frame.pack(pady=(20, 0))
 
+        # Time Label (left)
         self.time_label = customtkinter.CTkLabel(
-            self.container, 
-            font=customtkinter.CTkFont("Helvetica", 64),
-            text="--:--", 
+            self.time_frame,
+            font=customtkinter.CTkFont("Helvetica", 60),
+            text="--:--"
         )
-        self.time_label.pack(padx=20, pady=(20, 0))
+        self.time_label.grid(row=0, column=0)
+
+        # AM/PM Label (right)
+        self.pam_label = customtkinter.CTkLabel(
+            self.time_frame,
+            font=customtkinter.CTkFont("Helvetica", 25),
+            text="--"
+        )
+        self.pam_label.grid(row=0, column=1, padx=(10, 0)) 
 
         # Date label inside frame
         self.date_label = customtkinter.CTkLabel(
             self.container, 
-            font=customtkinter.CTkFont("Helvetica", 18, "bold"),
+            font=customtkinter.CTkFont("Helvetica", 20, "bold"),
             text="Loading...", 
         )
-        self.date_label.pack(pady=(0, 20))
+        self.date_label.pack(pady=(10, 0))
         
 
        
@@ -138,12 +149,12 @@ class App(customtkinter.CTk):
         # create scrollable frame
         self.scrollable_frame = customtkinter.CTkScrollableFrame(self, label_text="CTkScrollableFrame")
         self.scrollable_frame.grid(row=1, column=2, padx=(20, 0), pady=(20, 0), sticky="nsew")
-        self.scrollable_frame.grid_columnconfigure(0, weight=1)
-        self.scrollable_frame_switches = []
-        for i in range(100):
-            switch = customtkinter.CTkSwitch(master=self.scrollable_frame, text=f"CTkSwitch {i}")
-            switch.grid(row=i, column=0, padx=10, pady=(0, 20))
-            self.scrollable_frame_switches.append(switch)
+        #self.scrollable_frame.grid_columnconfigure(0, weight=1)
+        #self.scrollable_frame_switches = []
+        #for i in range(100):
+        #    switch = customtkinter.CTkSwitch(master=self.scrollable_frame, text=f"CTkSwitch {i}")
+        #    switch.grid(row=i, column=0, padx=10, pady=(0, 20))
+         #   self.scrollable_frame_switches.append(switch)
 
         # create checkbox and switch frame
         self.checkbox_slider_frame = customtkinter.CTkFrame(self)
@@ -156,11 +167,11 @@ class App(customtkinter.CTk):
         self.checkbox_3.grid(row=3, column=0, pady=20, padx=20, sticky="n")
 
         # set default values
-        self.sidebar_button_3.configure(state="disabled", text="Disabled CTkButton")
+        #self.sidebar_button_3.configure(state="disabled", text="Disabled CTkButton")
         self.checkbox_3.configure(state="disabled")
         self.checkbox_1.select()
-        self.scrollable_frame_switches[0].select()
-        self.scrollable_frame_switches[4].select()
+        #self.scrollable_frame_switches[0].select()
+        #self.scrollable_frame_switches[4].select()
         self.appearance_mode_optionemenu.set("Dark")
         self.scaling_optionemenu.set("100%")
         self.optionmenu_1.set("CTkOptionmenu")
@@ -193,11 +204,22 @@ class App(customtkinter.CTk):
 
 
     def update_time(self):
-        self.current_time = time.strftime('%H:%M')
+        if self.switch_var.get() == "on":
+            self.current_time = time.strftime('%H:%M')  # 24-hour format
+            self.time_label.configure(text=self.current_time)
+            self.pam_label.grid_remove()  # Hide AM/PM
+        else:
+            self.current_time = time.strftime('%I:%M')  # 12-hour format
+            self.m = time.strftime('%p')
+            self.time_label.configure(text=self.current_time)
+            self.pam_label.configure(text=self.m)
+            self.pam_label.grid()  # Show AM/PM
+
         self.current_date = datetime.now().strftime('%a, %d %B')
-        self.time_label.configure(text=self.current_time)
         self.date_label.configure(text=self.current_date)
-        app.after(1000, self.update_time)
+
+        self.after(1000, self.update_time)
+        
 
 if __name__ == "__main__":
     app = App()
