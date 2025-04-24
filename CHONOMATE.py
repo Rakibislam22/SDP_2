@@ -20,7 +20,7 @@ class App(customtkinter.CTk):
         # configure grid layout (4x4)
         self.grid_columnconfigure(1, weight=1)
         self.grid_columnconfigure((2, 3), weight=1)
-        self.grid_rowconfigure((0, 1, 2), weight=1)
+        self.grid_rowconfigure((0, 1), weight=1)
 
         # create sidebar frame with widgets
         self.sidebar_frame = customtkinter.CTkFrame(self, width=140, corner_radius=0)
@@ -47,20 +47,19 @@ class App(customtkinter.CTk):
         self.scaling_optionemenu.grid(row=8, column=0, padx=20, pady=(10, 20))
 
         # create main entry and button
-        self.entry = customtkinter.CTkEntry(self, placeholder_text="CTkEntry")
-        self.entry.grid(row=3, column=1, columnspan=2, padx=(20, 0), pady=(20, 20), sticky="nsew")
+        #self.entry = customtkinter.CTkEntry(self, placeholder_text="CTkEntry")
+        #self.entry.grid(row=3, column=1, columnspan=2, padx=(20, 0), pady=(20, 20), sticky="nsew")
 
-        self.main_button_1 = customtkinter.CTkButton(master=self,fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
-        self.main_button_1.grid(row=3, column=3, padx=(20, 20), pady=(20, 20), sticky="nsew")
+        #self.main_button_1 = customtkinter.CTkButton(master=self,fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
+        #self.main_button_1.grid(row=3, column=3, padx=(20, 20), pady=(20, 20), sticky="nsew")
 
         # Frame for time & date
-        self.container = customtkinter.CTkFrame(self)
+        self.container = customtkinter.CTkFrame(self,width=150, height=60)
         self.container.grid(row=0, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
 
 
 
-
-        self.time_frame = customtkinter.CTkFrame(self.container, fg_color="transparent")
+        self.time_frame = customtkinter.CTkFrame(self.container, fg_color="transparent",width=150, height=60)
         self.time_frame.pack(pady=(20, 0))
 
         # Time Label (left)
@@ -116,17 +115,17 @@ class App(customtkinter.CTk):
         self.label_tab_2.grid(row=0, column=0, padx=20, pady=20)
 
         # create radiobutton frame
-        self.radiobutton_frame = customtkinter.CTkFrame(self)
-        self.radiobutton_frame.grid(row=0, column=3, padx=(20, 20), pady=(20, 0), sticky="nsew")
-        self.radio_var = tkinter.IntVar(value=0)
-        self.label_radio_group = customtkinter.CTkLabel(master=self.radiobutton_frame, text="CLOCK STYLE:")
-        self.label_radio_group.grid(row=0, column=2, columnspan=1, padx=10, pady=10, sticky="")
-        self.radio_button_1 = customtkinter.CTkRadioButton(master=self.radiobutton_frame,text="Digital Clock", variable=self.radio_var, value=0)
-        self.radio_button_1.grid(row=1, column=2, pady=10, padx=20, sticky="n")
-        self.radio_button_2 = customtkinter.CTkRadioButton(master=self.radiobutton_frame,text="Analog Clock", variable=self.radio_var, value=1)
-        self.radio_button_2.grid(row=2, column=2, pady=10, padx=20, sticky="n")
-        self.radio_button_3 = customtkinter.CTkRadioButton(master=self.radiobutton_frame,text="Both" ,variable=self.radio_var, value=2)
-        self.radio_button_3.grid(row=3, column=2, pady=10, padx=20, sticky="n")
+        #self.radiobutton_frame = customtkinter.CTkFrame(self)
+        #self.radiobutton_frame.grid(row=0, column=3, padx=(20, 20), pady=(20, 0), sticky="nsew")
+        #self.radio_var = tkinter.IntVar(value=0)
+        #self.label_radio_group = customtkinter.CTkLabel(master=self.radiobutton_frame, text="CLOCK STYLE:")
+        #self.label_radio_group.grid(row=0, column=2, columnspan=1, padx=10, pady=10, sticky="")
+        #self.radio_button_1 = customtkinter.CTkRadioButton(master=self.radiobutton_frame,text="Digital Clock", variable=self.radio_var, value=0)
+        #self.radio_button_1.grid(row=1, column=2, pady=10, padx=20, sticky="n")
+        #self.radio_button_2 = customtkinter.CTkRadioButton(master=self.radiobutton_frame,text="Analog Clock", variable=self.radio_var, value=1)
+        #self.radio_button_2.grid(row=2, column=2, pady=10, padx=20, sticky="n")
+        #self.radio_button_3 = customtkinter.CTkRadioButton(master=self.radiobutton_frame,text="Both" ,variable=self.radio_var, value=2)
+        #self.radio_button_3.grid(row=3, column=2, pady=10, padx=20, sticky="n")
 
         # create slider and progressbar frame
         self.slider_progressbar_frame = customtkinter.CTkFrame(self)
@@ -157,19 +156,19 @@ class App(customtkinter.CTk):
          #   self.scrollable_frame_switches.append(switch)
 
         # create checkbox and switch frame
-        self.checkbox_slider_frame = customtkinter.CTkFrame(self)
-        self.checkbox_slider_frame.grid(row=1, column=3, padx=(20, 20), pady=(20, 0), sticky="nsew")
-        self.checkbox_1 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame)
-        self.checkbox_1.grid(row=1, column=0, pady=(20, 0), padx=20, sticky="n")
-        self.checkbox_2 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame)
-        self.checkbox_2.grid(row=2, column=0, pady=(20, 0), padx=20, sticky="n")
-        self.checkbox_3 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame)
-        self.checkbox_3.grid(row=3, column=0, pady=20, padx=20, sticky="n")
+        #self.checkbox_slider_frame = customtkinter.CTkFrame(self)
+        #self.checkbox_slider_frame.grid(row=1, column=3, padx=(20, 20), pady=(20, 0), sticky="nsew")
+        #self.checkbox_1 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame)
+        #self.checkbox_1.grid(row=1, column=0, pady=(20, 0), padx=20, sticky="n")
+        #self.checkbox_2 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame)
+        #self.checkbox_2.grid(row=2, column=0, pady=(20, 0), padx=20, sticky="n")
+        #self.checkbox_3 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame)
+        #self.checkbox_3.grid(row=3, column=0, pady=20, padx=20, sticky="n")
 
         # set default values
         #self.sidebar_button_3.configure(state="disabled", text="Disabled CTkButton")
-        self.checkbox_3.configure(state="disabled")
-        self.checkbox_1.select()
+        #self.checkbox_3.configure(state="disabled")
+        #self.checkbox_1.select()
         #self.scrollable_frame_switches[0].select()
         #self.scrollable_frame_switches[4].select()
         self.appearance_mode_optionemenu.set("Dark")
