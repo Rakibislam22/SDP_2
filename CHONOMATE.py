@@ -1,6 +1,7 @@
 import customtkinter
 import time
 from datetime import datetime
+from playsound import playsound
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -16,11 +17,19 @@ class WelcomePage(customtkinter.CTkFrame):
         self.label = customtkinter.CTkLabel(self, text="", font=customtkinter.CTkFont("Courier New", 35, "bold"))
         self.label.pack(pady=50)
 
+        
+
+
         self.dev_label = customtkinter.CTkLabel(self, text="Developed by Team ChronoMate", font=customtkinter.CTkFont("Helvetica", 20), text_color="gray")
         self.dev_label.pack(pady=(10, 40))
 
         self.skip_button = customtkinter.CTkButton(self, text="Click for Skip or Wait..5", command=self.skip, fg_color="#333", hover_color="#555")
         self.skip_button.pack(pady=(50))
+        
+        self.progressbar_1 = customtkinter.CTkProgressBar(self)
+        self.progressbar_1.configure(mode="determinate")
+        self.progressbar_1.set(0.0)  # Start empty
+        self.progressbar_1.pack(pady=(10, 10), padx=20, fill="x")
 
         self.char_index = 0
         self.animate_text()
@@ -28,8 +37,9 @@ class WelcomePage(customtkinter.CTkFrame):
         # Schedule countdown and skip button update after 5 seconds
         self.after(1000, self.start_countdown)  # Start countdown 1 second after initialization
         self.after(5000, self.skip)  # Automatically skip after 5 seconds
+        
 
-    
+
     def start_countdown(self):
         # Countdown from 5 to 1 with a pause of 1 second each
         self.countdown_value = 5
@@ -40,7 +50,8 @@ class WelcomePage(customtkinter.CTkFrame):
         if self.countdown_value > 0:
             self.countdown_value -= 1
             self.update_button_text(self.countdown_value)
-            self.after(1000, self.decrement_countdown)  # Schedule next decrement in 1 second
+            self.progressbar_1.set((5 - self.countdown_value) / 4)  # Fill from 0.0 to 1.0
+            self.after(1000, self.decrement_countdown)
 
     def update_button_text(self, i):
         # Update the button text
@@ -65,6 +76,11 @@ class App(customtkinter.CTk):
         self.title("ChronoMate")
         self.geometry("1100x580")
         self.show_welcome()
+        
+
+        Water_mark = customtkinter.CTkLabel(self, text="© rakibislam22", font=("Calibri", 15), corner_radius=0, width=1, height=1, fg_color="transparent", bg_color="transparent", text_color="#9e9e9e", )
+        Water_mark.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
+        
 
     def show_welcome(self):
         self.welcome = WelcomePage(self, self.start_main_app)
@@ -81,9 +97,13 @@ class App(customtkinter.CTk):
     def load_main_ui(self):
         self.welcome.destroy()
 
-        self.grid_columnconfigure(1, weight=1)
-        self.grid_columnconfigure((2), weight=1)
-        self.grid_rowconfigure((0), weight=1)
+        self.grid_columnconfigure(1, weight=1) 
+        self.grid_columnconfigure((2), weight=0)
+        self.grid_rowconfigure((0), weight=0)
+        self.grid_rowconfigure((1), weight=2)
+        self.grid_rowconfigure(2, weight=0, minsize=26)
+        self.grid_columnconfigure(2, weight=0, minsize=13)
+
 
         self.sidebar_frame = customtkinter.CTkFrame(self, width=140, corner_radius=0)
         self.sidebar_frame.grid(row=0, column=0, rowspan=4, sticky="nsew")
@@ -109,7 +129,7 @@ class App(customtkinter.CTk):
         self.container.grid(row=0, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
 
         self.time_frame = customtkinter.CTkFrame(self.container, fg_color="transparent", width=150, height=60)
-        self.time_frame.pack(pady=(20, 0))
+        self.time_frame.pack(pady=(10, 0))
 
         self.time_label = customtkinter.CTkLabel(self.time_frame, font=customtkinter.CTkFont("Helvetica", 60), text="--:--")
         self.time_label.grid(row=0, column=0)
@@ -118,34 +138,63 @@ class App(customtkinter.CTk):
         self.pam_label.grid(row=0, column=1, padx=(10, 0))
 
         self.date_label = customtkinter.CTkLabel(self.container, font=customtkinter.CTkFont("Helvetica", 20, "bold"), text="Loading...")
-        self.date_label.pack(pady=(10, 0))
+        self.date_label.pack(pady=(8, 0))
 
-        self.tabview = customtkinter.CTkTabview(self, width=250)
-        self.tabview.grid(row=0, column=2, padx=(20, 0), pady=(20, 0), sticky="nsew")
-        self.tabview.add("CTkTabview")
-        self.tabview.add("Tab 2")
-        self.tabview.add("Tab 3")
-        self.tabview.tab("CTkTabview").grid_columnconfigure(0, weight=1)
-        self.tabview.tab("Tab 2").grid_columnconfigure(0, weight=1)
+        self.tabview1 = customtkinter.CTkTabview(self, width=250)
+        self.tabview1.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        
+        # Adding tabs
+        self.tabview1.add("Alarm")
+        self.tabview1.add("World Clock")
+        self.tabview1.add("Stopwatch")
+        self.tabview1.add("Timer")
+        
+        # Access the "Alarm" tab and configure it for center alignment
+        alarm_tab = self.tabview1.tab("Alarm")
+        alarm_tab.grid_columnconfigure(0, weight=1)  # Allow column 0 to expand
+        alarm_tab.grid_rowconfigure(0, weight=1)  # Allow row 0 to expand
 
-        self.optionmenu_1 = customtkinter.CTkOptionMenu(self.tabview.tab("CTkTabview"), dynamic_resizing=False, values=["Value 1", "Value 2", "Value Long Long Long"])
-        self.optionmenu_1.grid(row=0, column=0, padx=20, pady=(20, 10))
+        # The AlarmPage should be placed inside the "Alarm" tab's content area
+        self.alarm_page = AlarmPage(alarm_tab, on_finish_callback=self.on_alarm_triggered)
 
-        self.combobox_1 = customtkinter.CTkComboBox(self.tabview.tab("CTkTabview"), values=["Value 1", "Value 2", "Value Long....."])
-        self.combobox_1.grid(row=1, column=0, padx=20, pady=(10, 10))
+        self.tabview1.set("Alarm")  # Set the "Alarm" tab as active
+        
+        # Now center the AlarmPage inside the tab
+        self.alarm_page.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+        
+        
 
-        self.string_input_button = customtkinter.CTkButton(self.tabview.tab("CTkTabview"), text="Open CTkInputDialog", command=self.open_input_dialog_event)
-        self.string_input_button.grid(row=2, column=0, padx=20, pady=(10, 10))
+        #self.tabview = customtkinter.CTkTabview(self, width=250)
+        #self.tabview.grid(row=0, column=2, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        #self.tabview.add("CTkTabview")
+        #self.tabview.add("Tab 2")
+        #self.tabview.add("Tab 3")
+        #self.tabview.tab("CTkTabview").grid_columnconfigure(0, weight=1)
+        #self.tabview.tab("Tab 2").grid_columnconfigure(0, weight=1)
 
-        self.label_tab_2 = customtkinter.CTkLabel(self.tabview.tab("Tab 2"), text="CTkLabel on Tab 2")
-        self.label_tab_2.grid(row=0, column=0, padx=20, pady=20)
+        #self.optionmenu_1 = customtkinter.CTkOptionMenu(self.tabview.tab("CTkTabview"), dynamic_resizing=False, values=["Value 1", "Value 2", "Value Long Long Long"])
+        #self.optionmenu_1.grid(row=0, column=0, padx=20, pady=(20, 10))
+
+        #self.combobox_1 = customtkinter.CTkComboBox(self.tabview.tab("CTkTabview"), values=["Value 1", "Value 2", "Value Long....."])
+        #self.combobox_1.grid(row=1, column=0, padx=20, pady=(10, 10))
+
+        #self.string_input_button = customtkinter.CTkButton(self.tabview.tab("CTkTabview"), text="Open CTkInputDialog", command=self.open_input_dialog_event)
+        #self.string_input_button.grid(row=2, column=0, padx=20, pady=(10, 10))
+
+        #self.label_tab_2 = customtkinter.CTkLabel(self.tabview.tab("Tab 2"), text="CTkLabel on Tab 2")
+        #self.label_tab_2.grid(row=0, column=0, padx=20, pady=20)
 
         self.appearance_mode_optionemenu.set("System")
         self.scaling_optionemenu.set("100%")
-        self.optionmenu_1.set("CTkOptionmenu")
-        self.combobox_1.set("CTkComboBox")
+        #self.optionmenu_1.set("CTkOptionmenu")
+        #elf.combobox_1.set("CTkComboBox")
 
         self.update_time()
+
+
+    def on_alarm_triggered(self):
+            print("Alarm Triggered! You can switch to the home screen or perform other actions.")
+            # Add any other functionality here, such as switching frames, showing notifications, etc.
 
     def update_time(self):
         if self.switch_var.get() == "on":
@@ -175,6 +224,85 @@ class App(customtkinter.CTk):
     def open_input_dialog_event(self):
         dialog = customtkinter.CTkInputDialog(text="Type in a number:", title="CTkInputDialog")
         print("CTkInputDialog:", dialog.get_input())
+
+
+class AlarmPage(customtkinter.CTkFrame):
+    def __init__(self, master, on_finish_callback):
+        super().__init__(master)
+        self.master = master
+        self.on_finish_callback = on_finish_callback
+        
+        self.configure(fg_color="transparent")
+        
+        
+        # Label to show alarm time
+        self.alarm_time_label = customtkinter.CTkLabel(self, text="Set Alarm Time", font=customtkinter.CTkFont("Arial", 18))
+        self.alarm_time_label.pack(pady=20)
+        
+        # Time entry for setting the alarm
+        self.alarm_time_entry = customtkinter.CTkEntry(self, placeholder_text="Enter time (HH:MM:SS)")
+        self.alarm_time_entry.pack(pady=10)
+        
+        # Button to set alarm
+        self.set_alarm_button = customtkinter.CTkButton(self, text="Set Alarm", command=self.set_alarm)
+        self.set_alarm_button.pack(pady=10)
+        
+        # Label for selecting custom sound
+        self.sound_label = customtkinter.CTkLabel(self, text="Choose Alarm Sound", font=customtkinter.CTkFont("Arial", 18))
+        self.sound_label.pack(pady=20)
+
+        # Button to open file dialog to choose sound
+        self.choose_sound_button = customtkinter.CTkButton(self, text="Choose Sound", command=self.choose_sound)
+        self.choose_sound_button.pack(pady=10)
+
+        self.selected_sound = None  # Holds the path to the selected sound file
+        
+        self.alarm_time = None  # Will hold the set alarm time
+
+    def set_alarm(self):
+        # Get the alarm time entered by the user
+        alarm_time_str = self.alarm_time_entry.get()
+        self.alarm_time = datetime.strptime(alarm_time_str, "%H:%M:%S").time()
+
+        # Print the set alarm time (just for checking)
+        print(f"Alarm set for: {self.alarm_time}")
+
+        # Check if alarm time has passed, and if it does, trigger the alarm
+        self.check_alarm()
+
+    def choose_sound(self):
+        # Open file dialog to let user select a sound
+        from tkinter.filedialog import askopenfilename
+        file_path = askopenfilename(filetypes=[("Audio Files", "*.mp3 *.wav")])
+        if file_path:
+            self.selected_sound = file_path
+            print(f"Selected sound: {self.selected_sound}")
+            
+    def check_alarm(self):
+        # Continuously check if the current time matches the alarm time
+        current_time = datetime.now().time()
+        
+        if current_time >= self.alarm_time:
+            print("Time to trigger the alarm!")
+            self.trigger_alarm()
+        else:
+            # Re-check in 1 second
+            self.after(1000, self.check_alarm)
+
+    def trigger_alarm(self):
+        if self.selected_sound:
+            # Play the selected sound (if one is chosen)
+            print("Playing alarm sound...")
+            playsound(self.selected_sound)  # For simpler sounds
+            # Alternatively, use pygame for advanced controls:
+            # pygame.mixer.init()
+            # pygame.mixer.music.load(self.selected_sound)
+            # pygame.mixer.music.play()
+        else:
+            print("No sound selected.")
+        
+        # Call the callback function (e.g., to switch screens, show message, etc.)
+        self.on_finish_callback()  # This calls the function from the main file (on_alarm_triggered)
 
 
 if __name__ == "__main__":
