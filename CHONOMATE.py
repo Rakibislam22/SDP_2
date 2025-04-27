@@ -1,7 +1,9 @@
 import customtkinter
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from playsound import playsound
+from PIL import Image
+import threading
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -231,78 +233,111 @@ class AlarmPage(customtkinter.CTkFrame):
         super().__init__(master)
         self.master = master
         self.on_finish_callback = on_finish_callback
-        
+
         self.configure(fg_color="transparent")
-        
-        
-        # Label to show alarm time
+
         self.alarm_time_label = customtkinter.CTkLabel(self, text="Set Alarm Time", font=customtkinter.CTkFont("Arial", 18))
-        self.alarm_time_label.pack(pady=20)
-        
-        # Time entry for setting the alarm
-        self.alarm_time_entry = customtkinter.CTkEntry(self, placeholder_text="Enter time (HH:MM:SS)")
-        self.alarm_time_entry.pack(pady=10)
-        
-        # Button to set alarm
-        self.set_alarm_button = customtkinter.CTkButton(self, text="Set Alarm", command=self.set_alarm)
-        self.set_alarm_button.pack(pady=10)
-        
-        # Label for selecting custom sound
+        self.alarm_time_label.grid(row=0, column=1, padx=10, pady=(30, 10))
+
+        self.clock_image = customtkinter.CTkImage(Image.open("clock.png"), size=(100, 100))
+        self.clock_label = customtkinter.CTkLabel(self, image=self.clock_image, text="")
+        self.clock_label.grid(row=0, column=0, padx=10, pady=10)
+
+        #self.scrollable_frame1 = customtkinter.CTkScrollableFrame(self)
+        #self.scrollable_frame1.grid(row=1, column=0, padx=5,pady=10)
+
+
+
+        self.hour_cb = customtkinter.CTkComboBox(self, values=[f"{i:02}" for i in range(1, 13)])
+        self.minute_cb = customtkinter.CTkComboBox(self, values=[f"{i:02}" for i in range(60)])
+        self.second_cb = customtkinter.CTkComboBox(self, values=[f"{i:02}" for i in range(60)])
+        self.period_cb = customtkinter.CTkComboBox(self, values=["AM", "PM"])
+
+        self.hour_cb.grid(row=1, column=0, padx=5, pady=10)
+        self.minute_cb.grid(row=1, column=1, padx=5, pady=10)
+        self.second_cb.grid(row=1, column=2, padx=5, pady=10)
+        self.period_cb.grid(row=1, column=3, padx=5, pady=10)
+
+        self.activate_switch = customtkinter.CTkSwitch(self, text="Activate", command=self.set_alarm)
+        self.activate_switch.grid(row=2, column=1, pady=10)
+
         self.sound_label = customtkinter.CTkLabel(self, text="Choose Alarm Sound", font=customtkinter.CTkFont("Arial", 18))
-        self.sound_label.pack(pady=20)
+        self.sound_label.grid(row=3, column=1, pady=(20, 5))
 
-        # Button to open file dialog to choose sound
         self.choose_sound_button = customtkinter.CTkButton(self, text="Choose Sound", command=self.choose_sound)
-        self.choose_sound_button.pack(pady=10)
+        self.choose_sound_button.grid(row=4, column=1, pady=10)
 
-        self.selected_sound = None  # Holds the path to the selected sound file
-        
-        self.alarm_time = None  # Will hold the set alarm time
+        self.selected_sound = None
+        self.alarm_time = None
+        self.alarm_active = False  # NEW: Flag to know alarm is ringing
+
+        # Snooze and Stop buttons
+        self.snooze_button = customtkinter.CTkButton(self, text="Snooze", command=self.snooze_alarm, state="disabled")
+        self.stop_button = customtkinter.CTkButton(self, text="Stop", command=self.stop_alarm, state="disabled")
+        self.snooze_button.grid(row=5, column=0, pady=20)
+        self.stop_button.grid(row=5, column=2, pady=20)
 
     def set_alarm(self):
-        # Get the alarm time entered by the user
-        alarm_time_str = self.alarm_time_entry.get()
-        self.alarm_time = datetime.strptime(alarm_time_str, "%H:%M:%S").time()
+        hour = int(self.hour_cb.get())
+        minute = int(self.minute_cb.get())
+        second = int(self.second_cb.get())
+        period = self.period_cb.get()
 
-        # Print the set alarm time (just for checking)
+        if period == "PM" and hour != 12:
+            hour += 12
+        if period == "AM" and hour == 12:
+            hour = 0
+
+        self.alarm_time = datetime.now().replace(hour=hour, minute=minute, second=second, microsecond=0).time()
         print(f"Alarm set for: {self.alarm_time}")
-
-        # Check if alarm time has passed, and if it does, trigger the alarm
+        self.alarm_active = True
         self.check_alarm()
 
     def choose_sound(self):
-        # Open file dialog to let user select a sound
         from tkinter.filedialog import askopenfilename
         file_path = askopenfilename(filetypes=[("Audio Files", "*.mp3 *.wav")])
         if file_path:
             self.selected_sound = file_path
             print(f"Selected sound: {self.selected_sound}")
-            
+
     def check_alarm(self):
-        # Continuously check if the current time matches the alarm time
+        if not self.alarm_active:
+            return
+
         current_time = datetime.now().time()
-        
+
         if current_time >= self.alarm_time:
             print("Time to trigger the alarm!")
             self.trigger_alarm()
         else:
-            # Re-check in 1 second
             self.after(1000, self.check_alarm)
 
     def trigger_alarm(self):
         if self.selected_sound:
-            # Play the selected sound (if one is chosen)
             print("Playing alarm sound...")
-            playsound(self.selected_sound)  # For simpler sounds
-            # Alternatively, use pygame for advanced controls:
-            # pygame.mixer.init()
-            # pygame.mixer.music.load(self.selected_sound)
-            # pygame.mixer.music.play()
+            threading.Thread(target=playsound, args=(self.selected_sound,), daemon=True).start()
         else:
             print("No sound selected.")
-        
-        # Call the callback function (e.g., to switch screens, show message, etc.)
-        self.on_finish_callback()  # This calls the function from the main file (on_alarm_triggered)
+
+        # Enable snooze and stop buttons
+        self.snooze_button.configure(state="normal")
+        self.stop_button.configure(state="normal")
+
+    def snooze_alarm(self):
+        print("Snoozing alarm for 5 minutes...")
+        snooze_time = (datetime.now() + timedelta(minutes=5)).time()
+        self.alarm_time = snooze_time
+        self.alarm_active = True
+        self.snooze_button.configure(state="disabled")
+        self.stop_button.configure(state="disabled")
+        self.check_alarm()
+
+    def stop_alarm(self):
+        print("Alarm stopped.")
+        self.alarm_active = False
+        self.snooze_button.configure(state="disabled")
+        self.stop_button.configure(state="disabled")
+        self.on_finish_callback()
 
 
 if __name__ == "__main__":
