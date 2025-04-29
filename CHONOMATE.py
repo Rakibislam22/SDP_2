@@ -1,7 +1,10 @@
 import customtkinter
 import time
 from datetime import datetime, timedelta
+from CTkScrollableDropdown import CTkScrollableDropdown
+from pathlib import Path
 from playsound import playsound
+from alif_calculator import MultiUtilityApp
 from PIL import Image
 import threading
 
@@ -17,21 +20,21 @@ class WelcomePage(customtkinter.CTkFrame):
         
         self.text = "Welcome to ChronoMate.."
         self.label = customtkinter.CTkLabel(self, text="", font=customtkinter.CTkFont("Courier New", 35, "bold"))
-        self.label.pack(pady=50)
+        self.label.pack(pady=80)
 
         
 
 
         self.dev_label = customtkinter.CTkLabel(self, text="Developed by Team ChronoMate", font=customtkinter.CTkFont("Helvetica", 20), text_color="gray")
-        self.dev_label.pack(pady=(10, 40))
+        self.dev_label.pack(pady=(50, 40))
 
         self.skip_button = customtkinter.CTkButton(self, text="Click for Skip or Wait..5", command=self.skip, fg_color="#333", hover_color="#555")
-        self.skip_button.pack(pady=(50))
+        self.skip_button.pack(pady=(70))
         
         self.progressbar_1 = customtkinter.CTkProgressBar(self)
         self.progressbar_1.configure(mode="determinate")
         self.progressbar_1.set(0.0)  # Start empty
-        self.progressbar_1.pack(pady=(10, 10), padx=20, fill="x")
+        self.progressbar_1.pack(pady=(70, 10), padx=20, fill="x")
 
         self.char_index = 0
         self.animate_text()
@@ -76,7 +79,7 @@ class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
         self.title("ChronoMate")
-        self.geometry("1100x580")
+        self.geometry("1100x780")
         self.show_welcome()
         
 
@@ -139,30 +142,86 @@ class App(customtkinter.CTk):
         self.pam_label = customtkinter.CTkLabel(self.time_frame, font=customtkinter.CTkFont("Helvetica", 25), text="--")
         self.pam_label.grid(row=0, column=1, padx=(10, 0))
 
-        self.date_label = customtkinter.CTkLabel(self.container, font=customtkinter.CTkFont("Helvetica", 20, "bold"), text="Loading...")
+        self.date_label = customtkinter.CTkLabel(self.container, font=customtkinter.CTkFont("Helvetica", 22, "bold"), text="Loading...")
         self.date_label.pack(pady=(8, 0))
 
-        self.tabview1 = customtkinter.CTkTabview(self, width=250)
+        self.update_time()
+
+        self.tab_n = ["Alarm", "World Clock", "Weather", "Stopwatch", "Timer"]
+
+        # Load images
+        self.drive = Path(__file__).resolve().parent
+        img_paths = ["alarm.png", "wc.png", "wea.png", "stop.png", "timer.png"]
+        self.icons = [
+            customtkinter.CTkImage(light_image=Image.open(self.drive / "image" / path), size=(30, 30))
+            for path in img_paths
+        ]
+
+        # Create tabview
+        self.tabview1 = customtkinter.CTkTabview(self, width=500, height=650)
         self.tabview1.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
+
+        self.arrow_button = customtkinter.CTkButton(self, text="➤", width=40, command=self.toggle_side_panel)
+        self.arrow_button.grid(row=0, column=2, pady=(10, 0))
+
+        # Side panel (initially hidden)
+        self.side_panel = customtkinter.CTkFrame(
+            self,
+            width=200,
+            corner_radius=15,
+            fg_color="transparent",  # or match parent with self.main_frame.cget("fg_color")
+            border_width=2,
+            border_color="#cccccc"  # Light gray border for visibility in light mode
+        )
+        self.side_panel.grid(row=1, column=2, padx=(10, 10), pady=(20, 0), sticky="nsew")
+        self.side_panel.grid_remove()  # Hide it initially
         
-        # Adding tabs
-        self.tabview1.add("Alarm")
-        self.tabview1.add("World Clock")
-        self.tabview1.add("Stopwatch")
-        self.tabview1.add("Timer")
-        
-        # Access the "Alarm" tab and configure it for center alignment
+        self.side_panel_label = customtkinter.CTkLabel(self.side_panel, text="Side Panel", font=("Helvetica", 20))
+        self.side_panel_label.pack(pady=20)
+
+        img_path = Path(__file__).resolve().parent / "image" / "wedgit.png"
+        self.image = customtkinter.CTkImage(light_image=Image.open(img_path), size=(25, 25))
+
+        # Create a button with the image
+        self.image_button = customtkinter.CTkButton(self.side_panel, image=self.image, text="", command=self.lonch_cal_btn)
+        self.image_button.pack()
+
+
+        self.side_panel_open = False
+
+
+        # Add tabs
+        for tab in self.tab_n:
+            self.tabview1.add(tab)
+
+        self.tabview1.set("Alarm")  # Default active
+
+        # Setup AlarmPage (repeat for other pages similarly)
         alarm_tab = self.tabview1.tab("Alarm")
-        alarm_tab.grid_columnconfigure(0, weight=1)  # Allow column 0 to expand
-        alarm_tab.grid_rowconfigure(0, weight=1)  # Allow row 0 to expand
-
-        # The AlarmPage should be placed inside the "Alarm" tab's content area
+        alarm_tab.grid_rowconfigure(0, weight=1)
+        alarm_tab.grid_rowconfigure(2, weight=1)
+        alarm_tab.grid_columnconfigure(0, weight=1)
+        alarm_tab.grid_columnconfigure(2, weight=1)
         self.alarm_page = AlarmPage(alarm_tab, on_finish_callback=self.on_alarm_triggered)
+        self.alarm_page.grid(row=0, column=1)
 
-        self.tabview1.set("Alarm")  # Set the "Alarm" tab as active
-        
-        # Now center the AlarmPage inside the tab
-        self.alarm_page.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+        # Access tab buttons
+        self.tab_buttons = self.tabview1._segmented_button._buttons_dict
+
+        # Initial setup of buttons
+        for i, (name, btn) in enumerate(self.tab_buttons.items()):
+            btn.configure(text="", image=self.icons[i], bg_color="transparent", font=("Helvetica", 14), border_width=2, border_spacing=4)
+
+        # Show label only for the first tab
+        for i, (name, btn) in enumerate(self.tab_buttons.items()):
+            if i == 0:
+                btn.configure(text=self.tab_n[i])
+            else:
+                btn.configure(text="")
+
+        # Add command to each button
+        for i, btn in enumerate(self.tab_buttons.values()):
+            btn.configure(command=lambda tab_index=i: self.update_tabs(tab_index))
         
         
 
@@ -189,9 +248,50 @@ class App(customtkinter.CTk):
         self.appearance_mode_optionemenu.set("System")
         self.scaling_optionemenu.set("100%")
         #self.optionmenu_1.set("CTkOptionmenu")
-        #elf.combobox_1.set("CTkComboBox")
+        self.mode=customtkinter.get_appearance_mode()
+     
 
-        self.update_time()
+    def lonch_cal_btn(self):
+        top = customtkinter.CTkToplevel(self)
+        top.title("Calculator")
+        top.geometry("400x600")  # Optional: Set size
+        app_calculator = MultiUtilityApp(top)
+        app_calculator.pack(fill="both", expand=True)
+
+        # Button to launch the above function
+        self.image_button = customtkinter.CTkButton(
+        self.side_panel,
+        image=self.image,
+        text="",
+        command=self.lonch_cal_btn,
+        width=40,
+        height=40,
+        fg_color="transparent",
+        hover_color="#e0e0e0"
+        )
+        self.image_button.pack(pady=5)
+
+
+    def toggle_side_panel(self):
+        if self.side_panel_open:
+            self.side_panel.grid_remove()
+            self.arrow_button.configure(text="➤")  # Pointing right
+        else:
+            self.side_panel.grid()
+            self.arrow_button.configure(text="➜")  # Pointing left⬅⇾
+        self.side_panel_open = not self.side_panel_open
+
+
+    def update_tabs(self, s_tab):
+        self.tabview1.set(self.tab_n[s_tab])
+
+        for i, (name, btn) in enumerate(self.tab_buttons.items()):
+            if i == s_tab:
+                btn.configure(text=self.tab_n[i], image=self.icons[i])
+            else:
+                btn.configure(text="", image=self.icons[i])
+
+        
 
 
     def on_alarm_triggered(self):
@@ -236,27 +336,33 @@ class AlarmPage(customtkinter.CTkFrame):
 
         self.configure(fg_color="transparent")
 
-        self.alarm_time_label = customtkinter.CTkLabel(self, text="Set Alarm Time", font=customtkinter.CTkFont("Arial", 18))
-        self.alarm_time_label.grid(row=0, column=1, padx=10, pady=(30, 10))
-
-        self.clock_image = customtkinter.CTkImage(Image.open("clock.png"), size=(100, 100))
-        self.clock_label = customtkinter.CTkLabel(self, image=self.clock_image, text="")
-        self.clock_label.grid(row=0, column=0, padx=10, pady=10)
+        self.alarm_time_label = customtkinter.CTkLabel(self, text="Hours", font=customtkinter.CTkFont("Arial", 18))
+        self.alarm_time_label.grid(row=0,column=0)
+        self.alarm_time_label = customtkinter.CTkLabel(self, text="Minutes", font=customtkinter.CTkFont("Arial", 18))
+        self.alarm_time_label.grid(row=0,column=1)
+        self.alarm_time_label = customtkinter.CTkLabel(self, text="Seconds", font=customtkinter.CTkFont("Arial", 18))
+        self.alarm_time_label.grid(row=0,column=2)
 
         #self.scrollable_frame1 = customtkinter.CTkScrollableFrame(self)
         #self.scrollable_frame1.grid(row=1, column=0, padx=5,pady=10)
 
+        hour= [f"{i:02}" for i in range(1, 13)]
+        minute = [f"{i:02}" for i in range(60)]
+        second = [f"{i:02}" for i in range(60)]
 
+        self.hour_cb = customtkinter.CTkComboBox(self, values=hour,justify='center')
+        self.minute_cb = customtkinter.CTkComboBox(self, values=minute,justify='center')
+        self.second_cb = customtkinter.CTkComboBox(self, values=second,justify='center')
+        self.period_cb = customtkinter.CTkComboBox(self, values=["AM", "PM"],justify='center',)
 
-        self.hour_cb = customtkinter.CTkComboBox(self, values=[f"{i:02}" for i in range(1, 13)])
-        self.minute_cb = customtkinter.CTkComboBox(self, values=[f"{i:02}" for i in range(60)])
-        self.second_cb = customtkinter.CTkComboBox(self, values=[f"{i:02}" for i in range(60)])
-        self.period_cb = customtkinter.CTkComboBox(self, values=["AM", "PM"])
+        CTkScrollableDropdown(self.hour_cb, values=hour)
+        CTkScrollableDropdown(self.minute_cb, values=minute)
+        CTkScrollableDropdown(self.second_cb, values=second)
 
-        self.hour_cb.grid(row=1, column=0, padx=5, pady=10)
-        self.minute_cb.grid(row=1, column=1, padx=5, pady=10)
-        self.second_cb.grid(row=1, column=2, padx=5, pady=10)
-        self.period_cb.grid(row=1, column=3, padx=5, pady=10)
+        self.hour_cb.grid(row=1, column=0, padx=5, pady=2)
+        self.minute_cb.grid(row=1, column=1, padx=5, pady=2)
+        self.second_cb.grid(row=1, column=2, padx=5, pady=2)
+        self.period_cb.grid(row=1, column=3, padx=5, pady=2)
 
         self.activate_switch = customtkinter.CTkSwitch(self, text="Activate", command=self.set_alarm)
         self.activate_switch.grid(row=2, column=1, pady=10)
