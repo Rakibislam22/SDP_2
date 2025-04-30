@@ -79,7 +79,7 @@ class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
         self.title("ChronoMate")
-        self.geometry("1100x780")
+        self.geometry("1100x820")
         self.show_welcome()
         
 
@@ -161,7 +161,7 @@ class App(customtkinter.CTk):
         self.tabview1 = customtkinter.CTkTabview(self, width=500, height=650)
         self.tabview1.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
 
-        self.arrow_button = customtkinter.CTkButton(self, text="➤", width=40, command=self.toggle_side_panel)
+        self.arrow_button = customtkinter.CTkButton(self, text="<<", width=40, command=self.toggle_side_panel)
         self.arrow_button.grid(row=0, column=2, pady=(10, 0))
 
         # Side panel (initially hidden)
@@ -180,12 +180,20 @@ class App(customtkinter.CTk):
         self.side_panel_label.pack(pady=20)
 
         img_path = Path(__file__).resolve().parent / "image" / "wedgit.png"
-        self.image = customtkinter.CTkImage(light_image=Image.open(img_path), size=(25, 25))
+        self.image = customtkinter.CTkImage(light_image=Image.open(img_path), size=(35, 35))
 
-        # Create a button with the image
-        self.image_button = customtkinter.CTkButton(self.side_panel, image=self.image, text="", command=self.lonch_cal_btn)
-        self.image_button.pack()
-
+        # Button to launch lonch_cal_btn function
+        self.image_button = customtkinter.CTkButton(
+        self.side_panel,
+        image=self.image,
+        text="UT",
+        command=self.lonch_cal_btn,
+        width=40,
+        height=40,
+        fg_color="transparent",
+        hover_color="#e0e0e0"
+        )
+        self.image_button.pack(pady=5)
 
         self.side_panel_open = False
 
@@ -252,33 +260,28 @@ class App(customtkinter.CTk):
      
 
     def lonch_cal_btn(self):
-        top = customtkinter.CTkToplevel(self)
-        top.title("Calculator")
-        top.geometry("400x600")  # Optional: Set size
-        app_calculator = MultiUtilityApp(top)
-        app_calculator.pack(fill="both", expand=True)
+        global a
+        mode = (customtkinter.get_appearance_mode()).lower()
+        top = customtkinter.CTkFrame(self)
+        #top.title("Calculator")
+        #top.geometry("400x600")  # Optional: Set size
+        top.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        back = customtkinter.CTkButton(top, text="X",fg_color="red",corner_radius=15, width=4, height=12, command=lambda:top.destroy())
+        back.pack(anchor="e",padx=20,pady=20)
 
-        # Button to launch the above function
-        self.image_button = customtkinter.CTkButton(
-        self.side_panel,
-        image=self.image,
-        text="",
-        command=self.lonch_cal_btn,
-        width=40,
-        height=40,
-        fg_color="transparent",
-        hover_color="#e0e0e0"
-        )
-        self.image_button.pack(pady=5)
+        a = MultiUtilityApp(top)
+        a.change_mode(mode)
 
+        
+        
 
     def toggle_side_panel(self):
         if self.side_panel_open:
             self.side_panel.grid_remove()
-            self.arrow_button.configure(text="➤")  # Pointing right
+            self.arrow_button.configure(text="<<")  # Pointing right
         else:
             self.side_panel.grid()
-            self.arrow_button.configure(text="➜")  # Pointing left⬅⇾
+            self.arrow_button.configure(text=">>")  # Pointing left⬅⇾
         self.side_panel_open = not self.side_panel_open
 
 
@@ -317,11 +320,17 @@ class App(customtkinter.CTk):
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         customtkinter.set_appearance_mode(new_appearance_mode)
+        m = (customtkinter.get_appearance_mode()).lower()
+        a.change_mode(m)
         
 
     def change_scaling_event(self, new_scaling: str):
         new_scaling_float = int(new_scaling.replace("%", "")) / 100
         customtkinter.set_widget_scaling(new_scaling_float)
+        if self.side_panel_open:
+            self.side_panel.grid()
+        else:
+            self.side_panel.grid_remove()
 
     def open_input_dialog_event(self):
         dialog = customtkinter.CTkInputDialog(text="Type in a number:", title="CTkInputDialog")
