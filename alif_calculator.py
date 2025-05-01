@@ -13,13 +13,13 @@ class MultiUtilityApp:
     def __init__(self, main_cal_windo):
         self.main_cal_windo = main_cal_windo
 
-        set_appearance_mode("dark")
+        #set_appearance_mode("dark")
         set_default_color_theme('dark-blue')
 
         self.open_calculator()
 
     def change_mode(self, m):
-        if m == "dark":
+        if m == "light":
             set_appearance_mode("light")
             self.calculator_fram.configure(fg_color="white")
             self.input_box.configure(fg_color="white", text_color="black")
@@ -38,7 +38,7 @@ class MultiUtilityApp:
                                           image=self.U_exc_btn_img_black)
             self.U_copyright_frame.configure(fg_color="transparent", bg_color="transparent")
 
-        elif m == "light":
+        elif m == "dark":
             set_appearance_mode("dark")
             self.calculator_fram.configure(fg_color="black")
             self.input_box.configure(fg_color="black", text_color="white")

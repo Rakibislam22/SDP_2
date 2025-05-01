@@ -7,9 +7,10 @@ from playsound import playsound
 from alif_calculator import MultiUtilityApp
 from PIL import Image
 import threading
+import os
 
-customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
-customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
+customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
+customtkinter.set_default_color_theme("dark-blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
 class WelcomePage(customtkinter.CTkFrame):
     def __init__(self, master, on_finish_callback):
@@ -122,7 +123,7 @@ class App(customtkinter.CTk):
 
         self.appearance_mode_label = customtkinter.CTkLabel(self.sidebar_frame, text="Appearance Mode:", anchor="w")
         self.appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0))
-        self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["Light", "Dark", "System"], command=self.change_appearance_mode_event)
+        self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["Light", "Dark"], command=self.change_appearance_mode_event)
         self.appearance_mode_optionemenu.grid(row=6, column=0, padx=20, pady=(10, 10))
 
         self.scaling_label = customtkinter.CTkLabel(self.sidebar_frame, text="UI Scaling:", anchor="w")
@@ -196,6 +197,8 @@ class App(customtkinter.CTk):
         self.image_button.pack(pady=5)
 
         self.side_panel_open = False
+        global b 
+        b = False
 
 
         # Add tabs
@@ -253,7 +256,7 @@ class App(customtkinter.CTk):
         #self.label_tab_2 = customtkinter.CTkLabel(self.tabview.tab("Tab 2"), text="CTkLabel on Tab 2")
         #self.label_tab_2.grid(row=0, column=0, padx=20, pady=20)
 
-        self.appearance_mode_optionemenu.set("System")
+        self.appearance_mode_optionemenu.set("Dark")
         self.scaling_optionemenu.set("100%")
         #self.optionmenu_1.set("CTkOptionmenu")
         self.mode=customtkinter.get_appearance_mode()
@@ -261,16 +264,18 @@ class App(customtkinter.CTk):
 
     def lonch_cal_btn(self):
         global a
+        global b
         mode = (customtkinter.get_appearance_mode()).lower()
-        top = customtkinter.CTkFrame(self)
+        self.top = customtkinter.CTkFrame(self)
         #top.title("Calculator")
         #top.geometry("400x600")  # Optional: Set size
-        top.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
-        back = customtkinter.CTkButton(top, text="X",fg_color="red",corner_radius=15, width=4, height=12, command=lambda:top.destroy())
+        self.top.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        back = customtkinter.CTkButton(self.top, text="X",fg_color="red",corner_radius=15, width=4, height=12, command=lambda:self.top.destroy())
         back.pack(anchor="e",padx=20,pady=20)
 
-        a = MultiUtilityApp(top)
+        a = MultiUtilityApp(self.top)
         a.change_mode(mode)
+        
 
         
         
@@ -319,9 +324,18 @@ class App(customtkinter.CTk):
         self.after(1000, self.update_time)
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
+        global a
+
+        if hasattr(self, 'top') and self.top.winfo_exists() :
+            m = (new_appearance_mode).lower()
+            a.change_mode(m)
+        else: 
+            pass
         customtkinter.set_appearance_mode(new_appearance_mode)
-        m = (customtkinter.get_appearance_mode()).lower()
-        a.change_mode(m)
+
+        
+         
+        
         
 
     def change_scaling_event(self, new_scaling: str):
