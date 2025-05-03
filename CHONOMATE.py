@@ -154,7 +154,7 @@ class App(customtkinter.CTk):
         self.drive = Path(__file__).resolve().parent
         img_paths = ["alarm.png", "wc.png", "wea.png", "stop.png", "timer.png"]
         self.icons = [
-            customtkinter.CTkImage(light_image=Image.open(self.drive / "image" / path), size=(30, 30))
+            customtkinter.CTkImage(light_image=Image.open(self.drive / "image" / path), size=(40, 40))
             for path in img_paths
         ]
 
