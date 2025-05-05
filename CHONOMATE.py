@@ -5,6 +5,7 @@ from CTkScrollableDropdown import CTkScrollableDropdown
 from pathlib import Path
 from playsound import playsound
 from alif_calculator import MultiUtilityApp
+from music import MusicPlayer
 from PIL import Image
 import threading
 import os
@@ -180,21 +181,36 @@ class App(customtkinter.CTk):
         self.side_panel_label = customtkinter.CTkLabel(self.side_panel, text="Side Panel", font=("Helvetica", 20))
         self.side_panel_label.pack(pady=20)
 
-        img_path = Path(__file__).resolve().parent / "image" / "wedgit.png"
-        self.image = customtkinter.CTkImage(light_image=Image.open(img_path), size=(35, 35))
+        img_path = Path(__file__).resolve().parent / "image" / "cal.png"
+        self.image = customtkinter.CTkImage(light_image=Image.open(img_path), size=(50, 50))
+
+        img_path2 = Path(__file__).resolve().parent / "image" / "music.png"
+        self.image2 = customtkinter.CTkImage(light_image=Image.open(img_path2), size=(50, 50))
 
         # Button to launch lonch_cal_btn function
         self.image_button = customtkinter.CTkButton(
         self.side_panel,
         image=self.image,
-        text="UT",
+        text="",
         command=self.lonch_cal_btn,
-        width=40,
-        height=40,
+        width=60,
+        height=60,
         fg_color="transparent",
         hover_color="#e0e0e0"
         )
         self.image_button.pack(pady=5)
+
+        self.image_button2 = customtkinter.CTkButton(
+        self.side_panel,
+        image=self.image2,
+        text="",
+        command=self.lonch_music_btn,
+        width=60,
+        height=60,
+        fg_color="transparent",
+        hover_color="#e0e0e0"
+        )
+        self.image_button2.pack(pady=5)
 
         self.side_panel_open = False
         global b 
@@ -265,6 +281,9 @@ class App(customtkinter.CTk):
     def lonch_cal_btn(self):
         global a
         global b
+        if hasattr(self, 'top2') and self.top2.winfo_exists():
+            self.top2.destroy()
+
         mode = (customtkinter.get_appearance_mode()).lower()
         self.top = customtkinter.CTkFrame(self)
         #top.title("Calculator")
@@ -275,7 +294,21 @@ class App(customtkinter.CTk):
 
         a = MultiUtilityApp(self.top)
         a.change_mode(mode)
+
+    def lonch_music_btn(self):
         
+        if hasattr(self, 'top') and self.top.winfo_exists():
+            self.top.destroy()
+
+        self.top2 = customtkinter.CTkFrame(self,width=400,height=500)
+        #top.title("Calculator")
+        #top.geometry("400x600")  # Optional: Set size
+        self.top2.grid(row=1, column=1, padx=(20, 20), pady=(20, 0), sticky="nsew")
+        back = customtkinter.CTkButton(self.top2, text="X",fg_color="red",corner_radius=15, width=4, height=12, command=lambda:self.top2.destroy())
+        back.pack(anchor="e",padx=20,pady=20)
+
+        a = MusicPlayer(self.top2)
+
 
         
         
