@@ -303,7 +303,7 @@ class App(customtkinter.CTk):
         self.top2 = customtkinter.CTkFrame(self,width=400,height=500)
         #top.title("Calculator")
         #top.geometry("400x600")  # Optional: Set size
-        self.top2.grid(row=1, column=1, padx=(20, 20), pady=(20, 0), sticky="nsew")
+        self.top2.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
         back = customtkinter.CTkButton(self.top2, text="X",fg_color="red",corner_radius=15, width=4, height=12, command=lambda:self.top2.destroy())
         back.pack(anchor="e",padx=20,pady=20)
 

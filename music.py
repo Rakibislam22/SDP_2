@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import tkinter.filedialog as fd
 import pygame
+from pathlib import Path
 from PIL import Image
 from customtkinter import CTkImage
 from mutagen.mp3 import MP3
@@ -9,17 +10,20 @@ import os
 class MusicPlayer:
     def __init__(self, root):
         self.root = root
-        self.root.title("Music Player")
-        self.center_window(400,500)
-        self.root.resizable(False, False)
+        #self.root.title("Music Player")
+        #self.center_window(400,500)
+        #self.root.resizable(False, False)
         self.playlist = []
         self.current_index = 0
+        img = Path(__file__).resolve().parent / "image" / "sound.png"
         self.cover_image = CTkImage(
-            light_image=Image.open("sound.png").resize((300, 300), Image.Resampling.LANCZOS),
-            dark_image=Image.open("sound.png").resize((300, 300), Image.Resampling.LANCZOS),
+            
+            light_image=Image.open(img).resize((300, 300), Image.Resampling.LANCZOS),
+            dark_image=Image.open(img).resize((300, 300), Image.Resampling.LANCZOS),
             size=(300, 300))
-        self.main_frame = ctk.CTkFrame(self.root)
-        self.main_frame.pack(fill="both", expand=True)
+        self.main_frame = ctk.CTkFrame(self.root, width=400, height=500)
+        self.main_frame.pack()
+        self.main_frame.pack_propagate(False)
 
 
         # === Initialize pygame ===
@@ -252,7 +256,7 @@ class MusicPlayer:
 
         self.playlist_window = ctk.CTkToplevel(self.root)
         self.playlist_window.title("Playlist")
-        self.playlist_window.geometry("300x400")
+        self.playlist_window.geometry("300x500")
 
         self.playlist_window.transient(self.root)
         self.playlist_window.attributes('-topmost', True)
@@ -283,8 +287,8 @@ class MusicPlayer:
 
 
 if __name__ == "__main__":
-    ctk.set_appearance_mode("dark")
-    ctk.set_default_color_theme("blue")
+    #ctk.set_appearance_mode("dark")
+    #ctk.set_default_color_theme("blue")
     root = ctk.CTk()
     app = MusicPlayer(root)
-    root.mainloop()
+    #root.mainloop()
