@@ -6,21 +6,21 @@ from customtkinter import CTkImage
 from mutagen.mp3 import MP3
 import os
 
-ctk.set_appearance_mode("Light")
-
 class MusicPlayer:
     def __init__(self, root):
         self.root = root
-        #self.root.title("Music Player")
-        #self.center_window(400,500)
-        #self.root.resizable(False, False)
+        self.root.title("Music Player")
+        self.center_window(400,500)
+        self.root.resizable(False, False)
         self.playlist = []
         self.current_index = 0
         self.cover_image = CTkImage(
-            light_image=Image.open("sound.png").resize((300, 200), Image.Resampling.LANCZOS),
-            dark_image=Image.open("sound.png").resize((300, 200), Image.Resampling.LANCZOS),
-            size=(300, 200)
-        )
+            light_image=Image.open("sound.png").resize((300, 300), Image.Resampling.LANCZOS),
+            dark_image=Image.open("sound.png").resize((300, 300), Image.Resampling.LANCZOS),
+            size=(300, 300))
+        self.main_frame = ctk.CTkFrame(self.root)
+        self.main_frame.pack(fill="both", expand=True)
+
 
         # === Initialize pygame ===
         pygame.mixer.init()
@@ -48,16 +48,16 @@ class MusicPlayer:
         self.root.geometry(f"{width}x{height}+{x}+{y}")
 
     def create_widgets(self):
-        self.song_title = ctk.CTkLabel(self.root, text="Song Title", font=("Arial", 18, "bold"))
+        self.song_title = ctk.CTkLabel(self.main_frame, text="Song Title", font=("Arial", 18, "bold"))
         self.song_title.pack(pady=(10, 5))
 
-        cover_frame = ctk.CTkFrame(self.root, width=300, height=200)
+        cover_frame = ctk.CTkFrame(self.main_frame, width=300, height=230)
         cover_frame.pack(pady=5)
         cover_frame.pack_propagate(False)
         self.cover_label = ctk.CTkLabel(cover_frame, image=self.cover_image, text="")
-        self.cover_label.pack()
+        self.cover_label.pack(expand=True)
 
-        time_frame = ctk.CTkFrame(self.root, fg_color="transparent")
+        time_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         time_frame.pack(fill="x", padx=20, pady=(10, 0))
 
         self.current_time_label = ctk.CTkLabel(time_frame, text="0:00")
@@ -66,13 +66,13 @@ class MusicPlayer:
         self.total_time_label = ctk.CTkLabel(time_frame, text="0:00")
         self.total_time_label.pack(side="right")
 
-        self.seek_slider = ctk.CTkSlider(self.root, from_=0, to=100, number_of_steps=100)
+        self.seek_slider = ctk.CTkSlider(self.main_frame, from_=0, to=100, number_of_steps=100)
         self.seek_slider.pack(fill="x", padx=20, pady=10)
         self.seek_slider.set(0)
         self.seek_slider.configure(command=self.on_slider_change)
         self.seek_slider.bind("<ButtonRelease-1>", self.on_slider_release)
 
-        controls_frame = ctk.CTkFrame(self.root, fg_color="transparent")
+        controls_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         controls_frame.pack(pady=(10, 0))
 
         self.back_btn = ctk.CTkButton(controls_frame, text="⏮️", width=40)
@@ -87,7 +87,7 @@ class MusicPlayer:
         self.next_btn.bind("<Button-1>", self.skip_forward)
         self.next_btn.bind("<Double-Button-1>", self.play_next_song)
 
-        tool_frame = ctk.CTkFrame(self.root, fg_color="transparent")
+        tool_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         tool_frame.pack(fill="x", padx=10, pady=(20, 10))
 
         self.sound_btn = ctk.CTkButton(tool_frame, text="🔈", width=20, command=self.toggle_sound)
@@ -107,6 +107,10 @@ class MusicPlayer:
 
         tool_frame.grid_columnconfigure((0, 1, 3, 4), weight=0)
         tool_frame.grid_columnconfigure(2, weight=1)
+
+        self.name_right = ctk.CTkLabel(self.main_frame, text="©Ismail hossain   ", font=("Arial", 10, "bold"))
+        self.name_right.place(relx = 1.0, rely = 1.0, anchor ='se')
+
 
     def format_time(self, seconds):
         minutes = int(seconds // 60)
@@ -279,10 +283,8 @@ class MusicPlayer:
 
 
 if __name__ == "__main__":
-    #ctk.set_appearance_mode("dark")
-    #ctk.set_default_color_theme("blue")
+    ctk.set_appearance_mode("dark")
+    ctk.set_default_color_theme("blue")
     root = ctk.CTk()
-    root.geometry("400x500")
-    #root.resizable(False, False)
     app = MusicPlayer(root)
-#     root.mainloop()
+    root.mainloop()
