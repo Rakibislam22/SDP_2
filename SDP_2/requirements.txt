@@ -1,0 +1,6 @@
+currencyconverter==0.18.4
+customtkinter==5.2.2
+mysql_connector_repackaged==0.3.1
+Pillow==11.2.1
+protobuf==6.30.2
+python-dotenv==1.1.0
