@@ -101,6 +101,41 @@ class App(customtkinter.CTk):
     #def show_welcome(self):
     #    self.welcome_frame = WelcomePage(self, self.load_main_ui)
 
+    def animate_slide_in(self):
+        self.side_panel.lift()  # Bring to front
+        width = self.side_panel.winfo_width()
+        start_x = self.winfo_width()
+        end_x = self.winfo_width() - width - 10  # Final position
+
+        def slide():
+            nonlocal start_x
+            if start_x > end_x:
+                start_x -= 5
+                self.side_panel.place(x=start_x, y=180)
+                self.after(10, slide)
+            else:
+                self.side_panel.place(x=end_x, y=180)
+
+        slide()
+
+
+    def animate_slide_out(self):
+        width = self.side_panel.winfo_width()
+        start_x = self.side_panel.winfo_x()
+        end_x = self.winfo_width()
+
+        def slide():
+            nonlocal start_x
+            if start_x < end_x:
+                start_x += 5
+                self.side_panel.place(x=start_x, y=180)
+                self.after(10, slide)
+            else:
+                self.side_panel.place_forget()
+
+        slide()
+
+
     def load_main_ui(self):
         self.welcome.destroy()
 
@@ -109,7 +144,7 @@ class App(customtkinter.CTk):
         self.grid_rowconfigure((0), weight=0)
         self.grid_rowconfigure((1), weight=2)
         self.grid_rowconfigure(2, weight=0, minsize=26)
-        self.grid_columnconfigure(2, weight=0, minsize=13)
+        self.grid_columnconfigure(2, weight=0, minsize=10)
 
 
         self.sidebar_frame = customtkinter.CTkFrame(self, width=140, corner_radius=0)
@@ -164,28 +199,31 @@ class App(customtkinter.CTk):
         self.tabview1.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
 
         self.arrow_button = customtkinter.CTkButton(self, text="<<", width=40, command=self.toggle_side_panel)
-        self.arrow_button.grid(row=0, column=2, pady=(10, 0))
+        #self.arrow_button.grid(row=0, column=1, pady=(10, 0))
+        self.arrow_button.place(x=self.winfo_width()-55, y=self.winfo_height()-720) 
 
         # Side panel (initially hidden)
         self.side_panel = customtkinter.CTkFrame(
             self,
-            width=200,
-            corner_radius=15,
-            fg_color="transparent",  # or match parent with self.main_frame.cget("fg_color")
+            width=300,
+            corner_radius=10,
+            #fg_color="transparent",  # or match parent with self.main_frame.cget("fg_color")
             border_width=2,
-            border_color="#cccccc"  # Light gray border for visibility in light mode
+            border_color="#53947c"  # Light gray border for visibility in light mode
         )
-        self.side_panel.grid(row=1, column=2, padx=(10, 10), pady=(20, 0), sticky="nsew")
-        self.side_panel.grid_remove()  # Hide it initially
+        #self.side_panel.grid(row=1, column=2, padx=(10, 10), pady=(20, 0), sticky="nsew")
+        #self.side_panel = customtkinter.CTkFrame(self, width=200, height=650)
+        self.side_panel.place(x=self.winfo_width(), y=self.winfo_height()-800)
+        #self.side_panel.grid_remove()  # Hide it initially
         
-        self.side_panel_label = customtkinter.CTkLabel(self.side_panel, text="Side Panel", font=("Helvetica", 20))
-        self.side_panel_label.pack(pady=20)
+        #self.side_panel_label = customtkinter.CTkLabel(self.side_panel, text="Side Panel", font=("Helvetica", 20))
+        #self.side_panel_label.pack(pady=20)
 
         img_path = Path(__file__).resolve().parent / "image" / "cal.png"
-        self.image = customtkinter.CTkImage(light_image=Image.open(img_path), size=(50, 50))
+        self.image = customtkinter.CTkImage(light_image=Image.open(img_path), size=(60, 60))
 
         img_path2 = Path(__file__).resolve().parent / "image" / "music.png"
-        self.image2 = customtkinter.CTkImage(light_image=Image.open(img_path2), size=(50, 50))
+        self.image2 = customtkinter.CTkImage(light_image=Image.open(img_path2), size=(60, 60))
 
         # Button to launch lonch_cal_btn function
         self.image_button = customtkinter.CTkButton(
@@ -193,24 +231,24 @@ class App(customtkinter.CTk):
         image=self.image,
         text="",
         command=self.lonch_cal_btn,
-        width=60,
-        height=60,
+        width=30,
+        height=40,
         fg_color="transparent",
-        hover_color="#e0e0e0"
+        hover_color="#888fba"
         )
-        self.image_button.pack(pady=5)
+        self.image_button.pack(padx=5,pady=5)
 
         self.image_button2 = customtkinter.CTkButton(
         self.side_panel,
         image=self.image2,
         text="",
         command=self.lonch_music_btn,
-        width=60,
-        height=60,
+        width=30,
+        height=40,
         fg_color="transparent",
-        hover_color="#e0e0e0"
+        hover_color="#888fba"
         )
-        self.image_button2.pack(pady=5)
+        self.image_button2.pack(padx=5,pady=5)
 
         self.side_panel_open = False
         global b 
@@ -283,6 +321,9 @@ class App(customtkinter.CTk):
         global b
         if hasattr(self, 'top2') and self.top2.winfo_exists():
             self.top2.destroy()
+        if hasattr(self, 'top') and self.top.winfo_exists():
+            self.top.destroy()
+        self.toggle_side_panel()
 
         mode = (customtkinter.get_appearance_mode()).lower()
         self.top = customtkinter.CTkFrame(self)
@@ -299,6 +340,9 @@ class App(customtkinter.CTk):
         
         if hasattr(self, 'top') and self.top.winfo_exists():
             self.top.destroy()
+        if hasattr(self, 'top2') and self.top2.winfo_exists():
+            self.top2.destroy()
+        self.toggle_side_panel()
 
         self.top2 = customtkinter.CTkFrame(self,width=400,height=500)
         #top.title("Calculator")
@@ -313,13 +357,23 @@ class App(customtkinter.CTk):
         
         
 
+    # def toggle_side_panel(self):
+    #     if self.side_panel_open:
+    #         self.side_panel.grid_remove()
+    #         self.arrow_button.configure(text="<<")  # Pointing right
+    #     else:
+    #         self.side_panel.grid()
+    #         self.arrow_button.configure(text=">>")  # Pointing left⬅⇾
+    #     self.side_panel_open = not self.side_panel_open
+
     def toggle_side_panel(self):
         if self.side_panel_open:
-            self.side_panel.grid_remove()
-            self.arrow_button.configure(text="<<")  # Pointing right
+            self.animate_slide_out()
+            self.arrow_button.configure(text="<<")
         else:
-            self.side_panel.grid()
-            self.arrow_button.configure(text=">>")  # Pointing left⬅⇾
+            self.animate_slide_in()
+            self.arrow_button.configure(text=">>")
+
         self.side_panel_open = not self.side_panel_open
 
 
@@ -362,6 +416,8 @@ class App(customtkinter.CTk):
         if hasattr(self, 'top') and self.top.winfo_exists() :
             m = (new_appearance_mode).lower()
             a.change_mode(m)
+            self.arrow_button.place(x=self.winfo_width()-55, y=self.winfo_height()-720)
+            self.side_panel.place(x=self.winfo_width(), y=self.winfo_height()-800)
         else: 
             pass
         customtkinter.set_appearance_mode(new_appearance_mode)
@@ -375,9 +431,11 @@ class App(customtkinter.CTk):
         new_scaling_float = int(new_scaling.replace("%", "")) / 100
         customtkinter.set_widget_scaling(new_scaling_float)
         if self.side_panel_open:
-            self.side_panel.grid()
+            #self.side_panel.grid()
+            pass
         else:
-            self.side_panel.grid_remove()
+            pass
+            #self.side_panel.grid_remove()
 
     def open_input_dialog_event(self):
         dialog = customtkinter.CTkInputDialog(text="Type in a number:", title="CTkInputDialog")
