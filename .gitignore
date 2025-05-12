@@ -1,0 +1,8 @@
+.env
+*.env
+__pycache__/
+test*
+required_packages.py
+updatetab.py
+tab.py
+alif_math.py

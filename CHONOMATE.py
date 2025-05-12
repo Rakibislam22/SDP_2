@@ -1,14 +1,19 @@
 import customtkinter
 import time
+import requests
 from datetime import datetime, timedelta
 from CTkScrollableDropdown import CTkScrollableDropdown
 from pathlib import Path
 from playsound import playsound
 from alif_calculator import MultiUtilityApp
 from music import MusicPlayer
-from PIL import Image
+from PIL import Image,ImageTk
+from io import BytesIO
 import threading
 import os
+from dotenv import load_dotenv
+load_dotenv()
+
 
 customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("dark-blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -81,7 +86,7 @@ class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
         self.title("ChronoMate")
-        self.geometry("1100x820")
+        self.geometry("1100x900")
         self.show_welcome()
         
 
@@ -140,49 +145,112 @@ class App(customtkinter.CTk):
         self.welcome.destroy()
 
         self.grid_columnconfigure(1, weight=1) 
-        self.grid_columnconfigure((2), weight=0)
-        self.grid_rowconfigure((0), weight=0)
-        self.grid_rowconfigure((1), weight=2)
-        self.grid_rowconfigure(2, weight=0, minsize=26)
-        self.grid_columnconfigure(2, weight=0, minsize=10)
+        #self.grid_columnconfigure((2), weight=0)
+        #self.grid_rowconfigure(0, weight=1)
+        #self.grid_rowconfigure((1), weight=2)
+        self.grid_rowconfigure(2, weight=0, minsize=32)
+        self.grid_columnconfigure(2, weight=0, minsize=5)
 
 
         self.sidebar_frame = customtkinter.CTkFrame(self, width=140, corner_radius=0)
         self.sidebar_frame.grid(row=0, column=0, rowspan=4, sticky="nsew")
         self.sidebar_frame.grid_rowconfigure(4, weight=1)
+
+        self.appearance_mode_label = customtkinter.CTkLabel(self.sidebar_frame, text="Appearance Mode:", anchor="w")
+        self.appearance_mode_label.grid(row=0, column=0, padx=20, pady=(10, 0))
+
+        self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["Light", "Dark"], command=self.change_appearance_mode_event)
+        self.appearance_mode_optionemenu.grid(row=1, column=0, padx=20, pady=(10, 10))
+        
         self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="Clock Mode", font=customtkinter.CTkFont(size=20, weight="bold"))
-        self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
+        self.logo_label.grid(row=2, column=0, padx=20, pady=(20, 10))
 
         self.switch_var = customtkinter.StringVar(value="on")
         self.switch = customtkinter.CTkSwitch(self.sidebar_frame, text="24 Hours", font=customtkinter.CTkFont(size=15, weight="bold"), command=self.update_time, variable=self.switch_var, onvalue="on", offvalue="off")
-        self.switch.grid(row=1, column=0, padx=20, pady=10)
+        self.switch.grid(row=3, column=0, padx=20, pady=10)
 
-        self.appearance_mode_label = customtkinter.CTkLabel(self.sidebar_frame, text="Appearance Mode:", anchor="w")
-        self.appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0))
-        self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["Light", "Dark"], command=self.change_appearance_mode_event)
-        self.appearance_mode_optionemenu.grid(row=6, column=0, padx=20, pady=(10, 10))
+        self.top_bar_frame = customtkinter.CTkFrame(self)
+        self.top_bar_frame.grid(row=0, column=1, columnspan=2, padx=5, sticky="news")
 
-        self.scaling_label = customtkinter.CTkLabel(self.sidebar_frame, text="UI Scaling:", anchor="w")
-        self.scaling_label.grid(row=7, column=0, padx=20, pady=(10, 0))
-        self.scaling_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["80%", "90%", "100%", "110%", "120%"], command=self.change_scaling_event)
-        self.scaling_optionemenu.grid(row=8, column=0, padx=20, pady=(10, 20))
+        self.center_wrapper = customtkinter.CTkFrame(self.top_bar_frame, fg_color="transparent")
+        self.center_wrapper.pack()
 
-        self.container = customtkinter.CTkFrame(self, width=150, height=60)
-        self.container.grid(row=0, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        self.clock_frame = customtkinter.CTkFrame(self.center_wrapper, fg_color="transparent")
+        self.clock_frame.grid(row=0, column=0, padx=50, sticky="e")
 
-        self.time_frame = customtkinter.CTkFrame(self.container, fg_color="transparent", width=150, height=60)
-        self.time_frame.pack(pady=(10, 0))
+        self.weather_frame = customtkinter.CTkFrame(self.center_wrapper, fg_color="transparent")
+        self.weather_frame.grid(row=0, column=1, padx=50, sticky="w")
 
-        self.time_label = customtkinter.CTkLabel(self.time_frame, font=customtkinter.CTkFont("Helvetica", 60), text="--:--")
-        self.time_label.grid(row=0, column=0)
 
-        self.pam_label = customtkinter.CTkLabel(self.time_frame, font=customtkinter.CTkFont("Helvetica", 25), text="--")
-        self.pam_label.grid(row=0, column=1, padx=(10, 0))
+        self.time_label = customtkinter.CTkLabel(
+            self.top_bar_frame,
+            font=customtkinter.CTkFont("Segoe UI", 60, weight="bold"),
+            text="--:--"
+        )
+        self.time_label.place(x=230, y=35)
 
-        self.date_label = customtkinter.CTkLabel(self.container, font=customtkinter.CTkFont("Helvetica", 22, "bold"), text="Loading...")
-        self.date_label.pack(pady=(8, 0))
+        self.pam_label = customtkinter.CTkLabel(
+            self.top_bar_frame,
+            font=customtkinter.CTkFont("Helvetica", 25),
+            text="--",
+        )
+        self.pam_label.place(x=400, y=65)
+
+        self.date_label = customtkinter.CTkLabel(self.top_bar_frame, font=customtkinter.CTkFont("Helvetica", 22, "bold"), text="Loading...")
+        self.date_label.place(x=250, y=125)
 
         self.update_time()
+
+        
+
+        # Weather Data Variables
+        self.city_var = customtkinter.StringVar(value="📍 Loading...")
+        self.temp_var = customtkinter.StringVar(value="--° C")
+        self.desc_var = customtkinter.StringVar(value="--")
+        self.humidity_var = customtkinter.StringVar(value="Humidity: --%")
+
+        # Weather Frame Grid Configuration
+        self.weather_frame.grid_columnconfigure(0, weight=1)
+        self.weather_frame.grid_columnconfigure(1, weight=1)
+
+        # City Name (centered)
+        self.city_label = customtkinter.CTkLabel(
+            self.weather_frame, 
+            textvariable=self.city_var, 
+            font=customtkinter.CTkFont(size=20)
+        )
+        self.city_label.grid(row=0, column=0, columnspan=2, pady=(5, 10), sticky="n")
+
+        # Weather Icon (left) + Temperature (right)
+        self.icon_label = customtkinter.CTkLabel(self.weather_frame, text="")
+        self.icon_label.grid(row=1, column=0, padx=(10, 5), sticky="e")
+
+        self.temp_label = customtkinter.CTkLabel(
+            self.weather_frame, 
+            textvariable=self.temp_var, 
+            font=customtkinter.CTkFont(size=38, weight="bold")
+        )
+        self.temp_label.grid(row=1, column=1, padx=(5, 10), sticky="w")
+
+        # Description (centered)
+        self.desc_label = customtkinter.CTkLabel(
+            self.weather_frame, 
+            textvariable=self.desc_var, 
+            font=customtkinter.CTkFont(size=15)
+        )
+        self.desc_label.grid(row=2, column=0, columnspan=2, pady=(5, 0))
+
+        # Humidity (centered)
+        self.humidity_label = customtkinter.CTkLabel(
+            self.weather_frame, 
+            textvariable=self.humidity_var, 
+            font=customtkinter.CTkFont(size=15)
+        )
+        self.humidity_label.grid(row=3, column=0, columnspan=2, pady=(0, 10))
+        
+        #self.load_weather_data("Dhaka")
+        # ✅ Only now call auto_update_weather
+        self.auto_update_weather()
 
         self.tab_n = ["Alarm", "World Clock", "Weather", "Stopwatch", "Timer"]
 
@@ -200,7 +268,7 @@ class App(customtkinter.CTk):
 
         self.arrow_button = customtkinter.CTkButton(self, text="<<", width=40, command=self.toggle_side_panel)
         #self.arrow_button.grid(row=0, column=1, pady=(10, 0))
-        self.arrow_button.place(x=self.winfo_width()-55, y=self.winfo_height()-720) 
+        self.arrow_button.place(x=self.winfo_width()-55, y=self.winfo_height()-790) 
 
         # Side panel (initially hidden)
         self.side_panel = customtkinter.CTkFrame(
@@ -288,33 +356,48 @@ class App(customtkinter.CTk):
         for i, btn in enumerate(self.tab_buttons.values()):
             btn.configure(command=lambda tab_index=i: self.update_tabs(tab_index))
         
-        
-
-        #self.tabview = customtkinter.CTkTabview(self, width=250)
-        #self.tabview.grid(row=0, column=2, padx=(20, 0), pady=(20, 0), sticky="nsew")
-        #self.tabview.add("CTkTabview")
-        #self.tabview.add("Tab 2")
-        #self.tabview.add("Tab 3")
-        #self.tabview.tab("CTkTabview").grid_columnconfigure(0, weight=1)
-        #self.tabview.tab("Tab 2").grid_columnconfigure(0, weight=1)
-
-        #self.optionmenu_1 = customtkinter.CTkOptionMenu(self.tabview.tab("CTkTabview"), dynamic_resizing=False, values=["Value 1", "Value 2", "Value Long Long Long"])
-        #self.optionmenu_1.grid(row=0, column=0, padx=20, pady=(20, 10))
-
-        #self.combobox_1 = customtkinter.CTkComboBox(self.tabview.tab("CTkTabview"), values=["Value 1", "Value 2", "Value Long....."])
-        #self.combobox_1.grid(row=1, column=0, padx=20, pady=(10, 10))
-
-        #self.string_input_button = customtkinter.CTkButton(self.tabview.tab("CTkTabview"), text="Open CTkInputDialog", command=self.open_input_dialog_event)
-        #self.string_input_button.grid(row=2, column=0, padx=20, pady=(10, 10))
-
-        #self.label_tab_2 = customtkinter.CTkLabel(self.tabview.tab("Tab 2"), text="CTkLabel on Tab 2")
-        #self.label_tab_2.grid(row=0, column=0, padx=20, pady=20)
 
         self.appearance_mode_optionemenu.set("Dark")
-        self.scaling_optionemenu.set("100%")
-        #self.optionmenu_1.set("CTkOptionmenu")
         self.mode=customtkinter.get_appearance_mode()
-     
+    
+
+    def load_weather_data(self, city="Dhaka"):
+        API_KEY = os.getenv("G_API_KEY")  # Ensure this environment variable is set
+        url = f"http://api.openweathermap.org/data/2.5/weather?appid={API_KEY}&q={city}"
+
+        try:
+            response = requests.get(url)
+            if response.status_code == 200:
+                data = response.json()
+                self.city_var.set(f"📍 {data['name']}")
+                self.temp_var.set(f"{round(data['main']['temp'] - 273.15, 1)}° C")
+                self.desc_var.set(data["weather"][0]["description"].title())
+                self.humidity_var.set(f"Humidity: {data['main']['humidity']}%")
+
+                # Correct way: use CTkImage
+                icon_code = data["weather"][0]["icon"]
+                icon_url = f"http://openweathermap.org/img/wn/{icon_code}@2x.png"
+                img_data = requests.get(icon_url).content
+                img = Image.open(BytesIO(img_data)).resize((50, 50))  # make it more visible
+
+                ctk_img = customtkinter.CTkImage(light_image=img, dark_image=img, size=(50, 50))
+                self.icon_label.configure(image=ctk_img, text="")  # text="" removes unwanted label text
+                self.icon_label.image = ctk_img  # Keep reference to prevent garbage collection
+
+            else:
+                self.city_var.set("❌ Load error")
+                self.temp_var.set("--° C")
+
+        except Exception as e:
+            self.city_var.set("❌ Network error")
+            print(f"[Weather Error] {e}")
+
+
+    def auto_update_weather(self):
+        self.load_weather_data("Dhaka")  # or dynamic city later
+        self.after(600000, self.auto_update_weather)  # every 10 minutes
+
+
 
     def lonch_cal_btn(self):
         global a
@@ -397,13 +480,12 @@ class App(customtkinter.CTk):
         if self.switch_var.get() == "on":
             self.current_time = time.strftime('%H:%M')
             self.time_label.configure(text=self.current_time)
-            self.pam_label.grid_remove()
+            self.pam_label.configure(text="")
         else:
             self.current_time = time.strftime('%I:%M')
             self.m = time.strftime('%p')
             self.time_label.configure(text=self.current_time)
             self.pam_label.configure(text=self.m)
-            self.pam_label.grid()
 
         self.current_date = datetime.now().strftime('%a, %d %B')
         self.date_label.configure(text=self.current_date)
