@@ -7,6 +7,7 @@ from pathlib import Path
 from playsound import playsound
 from alif_calculator import MultiUtilityApp
 from music import MusicPlayer
+from WorldC_Clock import TimezoneConverter
 from PIL import Image,ImageTk
 from io import BytesIO
 import threading
@@ -97,11 +98,13 @@ class App(customtkinter.CTk):
     def show_welcome(self):
         self.welcome = WelcomePage(self, self.start_main_app)
         self.welcome.pack(fill="both", expand=True)
+        self.start_preloading()
 
     def start_main_app(self):
         self.welcome.destroy()
         self.load_main_ui()
         self.update_time()
+        self.load_weather_data()
 
     #def show_welcome(self):
     #    self.welcome_frame = WelcomePage(self, self.load_main_ui)
@@ -116,10 +119,12 @@ class App(customtkinter.CTk):
             nonlocal start_x
             if start_x > end_x:
                 start_x -= 5
-                self.side_panel.place(x=start_x, y=180)
+                self.side_panel.place(x=start_x, y=240)
+                self.side_panel.lift()
                 self.after(10, slide)
             else:
-                self.side_panel.place(x=end_x, y=180)
+                self.side_panel.place(x=end_x, y=240)
+                self.side_panel.lift()
 
         slide()
 
@@ -133,7 +138,8 @@ class App(customtkinter.CTk):
             nonlocal start_x
             if start_x < end_x:
                 start_x += 5
-                self.side_panel.place(x=start_x, y=180)
+                self.side_panel.place(x=start_x, y=240)
+                self.side_panel.lift()
                 self.after(10, slide)
             else:
                 self.side_panel.place_forget()
@@ -197,17 +203,11 @@ class App(customtkinter.CTk):
         self.pam_label.place(x=400, y=65)
 
         self.date_label = customtkinter.CTkLabel(self.top_bar_frame, font=customtkinter.CTkFont("Helvetica", 22, "bold"), text="Loading...")
-        self.date_label.place(x=250, y=125)
-
-        self.update_time()
+        self.date_label.place(x=255, y=125)
 
         
 
-        # Weather Data Variables
-        self.city_var = customtkinter.StringVar(value="📍 Loading...")
-        self.temp_var = customtkinter.StringVar(value="--° C")
-        self.desc_var = customtkinter.StringVar(value="--")
-        self.humidity_var = customtkinter.StringVar(value="Humidity: --%")
+        
 
         # Weather Frame Grid Configuration
         self.weather_frame.grid_columnconfigure(0, weight=1)
@@ -248,44 +248,37 @@ class App(customtkinter.CTk):
         )
         self.humidity_label.grid(row=3, column=0, columnspan=2, pady=(0, 10))
         
-        #self.load_weather_data("Dhaka")
-        # ✅ Only now call auto_update_weather
-        self.auto_update_weather()
-
-        self.tab_n = ["Alarm", "World Clock", "Weather", "Stopwatch", "Timer"]
-
-        # Load images
-        self.drive = Path(__file__).resolve().parent
-        img_paths = ["alarm.png", "wc.png", "wea.png", "stop.png", "timer.png"]
-        self.icons = [
-            customtkinter.CTkImage(light_image=Image.open(self.drive / "image" / path), size=(40, 40))
-            for path in img_paths
-        ]
+        self.refresh = customtkinter.CTkButton(
+            self.top_bar_frame, 
+            text="⭮",font=customtkinter.CTkFont(size=20,weight="bold"), 
+            width=1,
+            fg_color="transparent",
+            text_color="Green",
+            command=self.load_weather_data
+        )
+        self.refresh.place(x=665, y=148)
+        
 
         # Create tabview
         self.tabview1 = customtkinter.CTkTabview(self, width=500, height=650)
         self.tabview1.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
 
         self.arrow_button = customtkinter.CTkButton(self, text="<<", width=40, command=self.toggle_side_panel)
-        #self.arrow_button.grid(row=0, column=1, pady=(10, 0))
-        self.arrow_button.place(x=self.winfo_width()-55, y=self.winfo_height()-790) 
+        self.arrow_button.place(x=self.winfo_width()-50, y=self.winfo_height()-730) 
 
         # Side panel (initially hidden)
         self.side_panel = customtkinter.CTkFrame(
             self,
-            width=300,
-            corner_radius=10,
-            #fg_color="transparent",  # or match parent with self.main_frame.cget("fg_color")
+            corner_radius=10,       
             border_width=2,
-            border_color="#53947c"  # Light gray border for visibility in light mode
+            border_color="#53947c"
+              
         )
-        #self.side_panel.grid(row=1, column=2, padx=(10, 10), pady=(20, 0), sticky="nsew")
-        #self.side_panel = customtkinter.CTkFrame(self, width=200, height=650)
-        self.side_panel.place(x=self.winfo_width(), y=self.winfo_height()-800)
-        #self.side_panel.grid_remove()  # Hide it initially
         
-        #self.side_panel_label = customtkinter.CTkLabel(self.side_panel, text="Side Panel", font=("Helvetica", 20))
-        #self.side_panel_label.pack(pady=20)
+        self.side_panel.place(x=self.winfo_width(), y=240)
+        self.side_panel.lift()
+    
+
 
         img_path = Path(__file__).resolve().parent / "image" / "cal.png"
         self.image = customtkinter.CTkImage(light_image=Image.open(img_path), size=(60, 60))
@@ -300,7 +293,7 @@ class App(customtkinter.CTk):
         text="",
         command=self.lonch_cal_btn,
         width=30,
-        height=40,
+        height=30,
         fg_color="transparent",
         hover_color="#888fba"
         )
@@ -312,20 +305,20 @@ class App(customtkinter.CTk):
         text="",
         command=self.lonch_music_btn,
         width=30,
-        height=40,
+        height=30,
         fg_color="transparent",
         hover_color="#888fba"
         )
         self.image_button2.pack(padx=5,pady=5)
 
         self.side_panel_open = False
-        global b 
-        b = False
 
 
         # Add tabs
         for tab in self.tab_n:
             self.tabview1.add(tab)
+
+        
 
         self.tabview1.set("Alarm")  # Default active
 
@@ -337,6 +330,14 @@ class App(customtkinter.CTk):
         alarm_tab.grid_columnconfigure(2, weight=1)
         self.alarm_page = AlarmPage(alarm_tab, on_finish_callback=self.on_alarm_triggered)
         self.alarm_page.grid(row=0, column=1)
+        
+        wc_tab = self.tabview1.tab("World Clock")
+        wc_tab.grid_rowconfigure(0, weight=1)
+        wc_tab.grid_rowconfigure(2, weight=1)
+        wc_tab.grid_columnconfigure(0, weight=1)
+        wc_tab.grid_columnconfigure(2, weight=1)
+        self.timezone_converter = TimezoneConverter(master=wc_tab)
+        self.timezone_converter.grid(row=0, column=1)
 
         # Access tab buttons
         self.tab_buttons = self.tabview1._segmented_button._buttons_dict
@@ -359,87 +360,146 @@ class App(customtkinter.CTk):
 
         self.appearance_mode_optionemenu.set("Dark")
         self.mode=customtkinter.get_appearance_mode()
+   
     
+        
+
+    # Start preloading resources (weather, images, classes, etc.)
+    def start_preloading(self):
+        self.after(100,self.load_images)
+        self.after(200,self.prepare_weather_data)
+        self.after(300,self.prepare_tabs)
+
+
+
+    # Weather Data Variables
+    def prepare_weather_data(self):
+        self.city_var = customtkinter.StringVar(value="📍 Loading...")
+        self.temp_var = customtkinter.StringVar(value="--° C")
+        self.desc_var = customtkinter.StringVar(value="--")
+        self.humidity_var = customtkinter.StringVar(value="Humidity: --%")
+
+    def prepare_tabs(self):
+            self.tab_n = ["Alarm", "World Clock", "Weather", "Stopwatch", "Timer"]
+
+    # Load images
+    def load_images(self):
+        self.drive = Path(__file__).resolve().parent
+        img_paths = ["alarm.png", "wc.png", "wea.png", "stop.png", "timer.png"]
+        self.icons = [
+            customtkinter.CTkImage(light_image=Image.open(self.drive / "image" / path), size=(40, 40))
+            for path in img_paths
+        ]
+
 
     def load_weather_data(self, city="Dhaka"):
-        API_KEY = os.getenv("G_API_KEY")  # Ensure this environment variable is set
-        url = f"http://api.openweathermap.org/data/2.5/weather?appid={API_KEY}&q={city}"
+        def fetch_weather():
+            try:
+                API_KEY = os.getenv("G_API_KEY")
+                if not API_KEY:
+                    raise ValueError("API key not found in environment variables")
 
-        try:
-            response = requests.get(url)
-            if response.status_code == 200:
+                url = f"http://api.openweathermap.org/data/2.5/weather?appid={API_KEY}&q={city}&units=metric"
+                response = requests.get(url)
                 data = response.json()
-                self.city_var.set(f"📍 {data['name']}")
-                self.temp_var.set(f"{round(data['main']['temp'] - 273.15, 1)}° C")
-                self.desc_var.set(data["weather"][0]["description"].title())
-                self.humidity_var.set(f"Humidity: {data['main']['humidity']}%")
 
-                # Correct way: use CTkImage
-                icon_code = data["weather"][0]["icon"]
-                icon_url = f"http://openweathermap.org/img/wn/{icon_code}@2x.png"
-                img_data = requests.get(icon_url).content
-                img = Image.open(BytesIO(img_data)).resize((50, 50))  # make it more visible
+                # Extract data
+                city_name = data["name"]
+                temp = data["main"]["temp"]
+                desc = data["weather"][0]["description"].capitalize()
+                humidity = data["main"]["humidity"]
+                icon = data["weather"][0]["icon"]
 
-                ctk_img = customtkinter.CTkImage(light_image=img, dark_image=img, size=(50, 50))
-                self.icon_label.configure(image=ctk_img, text="")  # text="" removes unwanted label text
-                self.icon_label.image = ctk_img  # Keep reference to prevent garbage collection
+                # Schedule GUI updates on main thread
+                self.after(0, lambda: self.update_weather_ui(city_name, temp, desc, humidity, icon))
+            except Exception as e:
+                print(f"Error loading weather: {e}")
+                self.after(0, lambda: self.city_var.set("❌ Error"))
 
-            else:
-                self.city_var.set("❌ Load error")
-                self.temp_var.set("--° C")
+        threading.Thread(target=fetch_weather, daemon=True).start()
 
+    def update_weather_ui(self, city, temp, desc, humidity, icon_code):
+        self.city_var.set(f"📍 {city}")
+        self.temp_var.set(f"{temp:.1f}° C")
+        self.desc_var.set(desc)
+        self.humidity_var.set(f"Humidity: {humidity}%")
+
+        # Load icon (live download)
+        try:
+            from PIL import ImageTk
+            import io
+            icon_url = f"http://openweathermap.org/img/wn/{icon_code}@2x.png"
+            icon_response = requests.get(icon_url)
+            image = Image.open(io.BytesIO(icon_response.content))
+            icon_image = customtkinter.CTkImage(light_image=image, size=(60, 60))
+            self.icon_label.configure(image=icon_image)
+            self.icon_label.image = icon_image  # Prevent garbage collection
         except Exception as e:
-            self.city_var.set("❌ Network error")
-            print(f"[Weather Error] {e}")
+            print("Failed to load weather icon:", e)
 
-
-    def auto_update_weather(self):
-        self.load_weather_data("Dhaka")  # or dynamic city later
-        self.after(600000, self.auto_update_weather)  # every 10 minutes
-
-
+    
 
     def lonch_cal_btn(self):
-        global a
-        global b
         if hasattr(self, 'top2') and self.top2.winfo_exists():
-            self.top2.destroy()
-        if hasattr(self, 'top') and self.top.winfo_exists():
-            self.top.destroy()
+            self.top2.grid_forget()
+
         self.toggle_side_panel()
 
         mode = (customtkinter.get_appearance_mode()).lower()
-        self.top = customtkinter.CTkFrame(self)
-        #top.title("Calculator")
-        #top.geometry("400x600")  # Optional: Set size
-        self.top.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
-        back = customtkinter.CTkButton(self.top, text="X",fg_color="red",corner_radius=15, width=4, height=12, command=lambda:self.top.destroy())
-        back.pack(anchor="e",padx=20,pady=20)
 
-        a = MultiUtilityApp(self.top)
-        a.change_mode(mode)
+        if not hasattr(self, 'top') or not self.top.winfo_exists():
+            self.top = customtkinter.CTkFrame(self)
+            self.top.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
+            self.calculator_app = MultiUtilityApp(self.top)
+            back = customtkinter.CTkButton(
+            self.top,
+            text="←",
+            font=customtkinter.CTkFont(weight="bold",size=40),
+            fg_color="transparent",
+            text_color="#4d79ff",
+            height=12,
+            command=lambda: self.top.grid_forget())
+        
+            back.place(x=1, y=1)
+            back.configure(hover=False)
+
+        else:
+            self.top.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
+            
+
+        self.calculator_app.change_mode(mode)
+        #self.top.bind("<Button-1>", self.toggle_side_panel)
+
 
     def lonch_music_btn(self):
-        
         if hasattr(self, 'top') and self.top.winfo_exists():
-            self.top.destroy()
-        if hasattr(self, 'top2') and self.top2.winfo_exists():
-            self.top2.destroy()
+            self.top.grid_forget()
+
         self.toggle_side_panel()
 
-        self.top2 = customtkinter.CTkFrame(self,width=400,height=500)
-        #top.title("Calculator")
-        #top.geometry("400x600")  # Optional: Set size
-        self.top2.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
-        back = customtkinter.CTkButton(self.top2, text="X",fg_color="red",corner_radius=15, width=4, height=12, command=lambda:self.top2.destroy())
-        back.pack(anchor="e",padx=20,pady=20)
-
-        a = MusicPlayer(self.top2)
-
-
+        if not hasattr(self, 'top2') or not self.top2.winfo_exists():
+            self.top2 = customtkinter.CTkFrame(self)
+            self.top2.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
+            self.music_player = MusicPlayer(self.top2)
+            
+            back = customtkinter.CTkButton(
+            self.top2,
+            text="←",
+            font=customtkinter.CTkFont(weight="bold",size=40),
+            fg_color="transparent",
+            text_color="#4d79ff",
+            height=12,
+            command=lambda: self.top2.grid_forget())
+        
+            back.place(x=1, y=1)
+            back.configure(hover=False)
+            
+        else:
+            self.top2.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
+          
+        #self.top2.bind("<Button-1>", self.toggle_side_panel)
         
         
-
     # def toggle_side_panel(self):
     #     if self.side_panel_open:
     #         self.side_panel.grid_remove()
@@ -497,31 +557,11 @@ class App(customtkinter.CTk):
 
         if hasattr(self, 'top') and self.top.winfo_exists() :
             m = (new_appearance_mode).lower()
-            a.change_mode(m)
-            self.arrow_button.place(x=self.winfo_width()-55, y=self.winfo_height()-720)
-            self.side_panel.place(x=self.winfo_width(), y=self.winfo_height()-800)
-        else: 
-            pass
+            self.calculator_app.change_mode(m)
+            
         customtkinter.set_appearance_mode(new_appearance_mode)
 
         
-         
-        
-        
-
-    def change_scaling_event(self, new_scaling: str):
-        new_scaling_float = int(new_scaling.replace("%", "")) / 100
-        customtkinter.set_widget_scaling(new_scaling_float)
-        if self.side_panel_open:
-            #self.side_panel.grid()
-            pass
-        else:
-            pass
-            #self.side_panel.grid_remove()
-
-    def open_input_dialog_event(self):
-        dialog = customtkinter.CTkInputDialog(text="Type in a number:", title="CTkInputDialog")
-        print("CTkInputDialog:", dialog.get_input())
 
 
 class AlarmPage(customtkinter.CTkFrame):
@@ -546,10 +586,10 @@ class AlarmPage(customtkinter.CTkFrame):
         minute = [f"{i:02}" for i in range(60)]
         second = [f"{i:02}" for i in range(60)]
 
-        self.hour_cb = customtkinter.CTkComboBox(self, values=hour,justify='center')
-        self.minute_cb = customtkinter.CTkComboBox(self, values=minute,justify='center')
-        self.second_cb = customtkinter.CTkComboBox(self, values=second,justify='center')
-        self.period_cb = customtkinter.CTkComboBox(self, values=["AM", "PM"],justify='center',)
+        self.hour_cb = customtkinter.CTkComboBox(self, values=hour,justify='center',state="readonly")
+        self.minute_cb = customtkinter.CTkComboBox(self, values=minute,justify='center',state="readonly")
+        self.second_cb = customtkinter.CTkComboBox(self, values=second,justify='center',state="readonly")
+        self.period_cb = customtkinter.CTkComboBox(self, values=["AM", "PM"],justify='center',state="readonly")
 
         CTkScrollableDropdown(self.hour_cb, values=hour)
         CTkScrollableDropdown(self.minute_cb, values=minute)

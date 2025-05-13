@@ -21,7 +21,7 @@ class MusicPlayer:
             light_image=Image.open(img).resize((300, 300), Image.Resampling.LANCZOS),
             dark_image=Image.open(img).resize((300, 300), Image.Resampling.LANCZOS),
             size=(300, 300))
-        self.main_frame = ctk.CTkFrame(self.root, width=400, height=500)
+        self.main_frame = ctk.CTkFrame(self.root, width=420, height=560)
         self.main_frame.pack()
         self.main_frame.pack_propagate(False)
 
