@@ -119,11 +119,11 @@ class App(customtkinter.CTk):
             nonlocal start_x
             if start_x > end_x:
                 start_x -= 5
-                self.side_panel.place(x=start_x, y=240)
+                self.side_panel.place(x=start_x, y=205)
                 self.side_panel.lift()
                 self.after(10, slide)
             else:
-                self.side_panel.place(x=end_x, y=240)
+                self.side_panel.place(x=end_x, y=205)
                 self.side_panel.lift()
 
         slide()
@@ -138,7 +138,7 @@ class App(customtkinter.CTk):
             nonlocal start_x
             if start_x < end_x:
                 start_x += 5
-                self.side_panel.place(x=start_x, y=240)
+                self.side_panel.place(x=start_x, y=205)
                 self.side_panel.lift()
                 self.after(10, slide)
             else:
@@ -182,10 +182,13 @@ class App(customtkinter.CTk):
         self.center_wrapper.pack()
 
         self.clock_frame = customtkinter.CTkFrame(self.center_wrapper, fg_color="transparent")
-        self.clock_frame.grid(row=0, column=0, padx=50, sticky="e")
+        self.clock_frame.grid(row=0, column=0, padx=180, sticky="e")
 
         self.weather_frame = customtkinter.CTkFrame(self.center_wrapper, fg_color="transparent")
-        self.weather_frame.grid(row=0, column=1, padx=50, sticky="w")
+        self.weather_frame.grid(row=0, column=1, padx=190, sticky="w")
+
+        self.le = customtkinter.CTkLabel(self.clock_frame,text=".")
+        self.le.pack()
 
 
         self.time_label = customtkinter.CTkLabel(
@@ -193,17 +196,17 @@ class App(customtkinter.CTk):
             font=customtkinter.CTkFont("Segoe UI", 60, weight="bold"),
             text="--:--"
         )
-        self.time_label.place(x=230, y=35)
+        self.time_label.place(x=270, y=35)
 
         self.pam_label = customtkinter.CTkLabel(
             self.top_bar_frame,
             font=customtkinter.CTkFont("Helvetica", 25),
             text="--",
         )
-        self.pam_label.place(x=400, y=65)
+        self.pam_label.place(x=440, y=65)
 
         self.date_label = customtkinter.CTkLabel(self.top_bar_frame, font=customtkinter.CTkFont("Helvetica", 22, "bold"), text="Loading...")
-        self.date_label.place(x=255, y=125)
+        self.date_label.place(x=295, y=125)
 
         
 
@@ -217,7 +220,7 @@ class App(customtkinter.CTk):
         self.city_label = customtkinter.CTkLabel(
             self.weather_frame, 
             textvariable=self.city_var, 
-            font=customtkinter.CTkFont(size=20)
+            font=customtkinter.CTkFont(size=17)
         )
         self.city_label.grid(row=0, column=0, columnspan=2, pady=(5, 10), sticky="n")
 
@@ -228,7 +231,7 @@ class App(customtkinter.CTk):
         self.temp_label = customtkinter.CTkLabel(
             self.weather_frame, 
             textvariable=self.temp_var, 
-            font=customtkinter.CTkFont(size=38, weight="bold")
+            font=customtkinter.CTkFont(size=32, weight="bold")
         )
         self.temp_label.grid(row=1, column=1, padx=(5, 10), sticky="w")
 
@@ -236,7 +239,7 @@ class App(customtkinter.CTk):
         self.desc_label = customtkinter.CTkLabel(
             self.weather_frame, 
             textvariable=self.desc_var, 
-            font=customtkinter.CTkFont(size=15)
+            font=customtkinter.CTkFont(size=13)
         )
         self.desc_label.grid(row=2, column=0, columnspan=2, pady=(5, 0))
 
@@ -244,7 +247,7 @@ class App(customtkinter.CTk):
         self.humidity_label = customtkinter.CTkLabel(
             self.weather_frame, 
             textvariable=self.humidity_var, 
-            font=customtkinter.CTkFont(size=15)
+            font=customtkinter.CTkFont(size=13)
         )
         self.humidity_label.grid(row=3, column=0, columnspan=2, pady=(0, 10))
         
@@ -256,15 +259,15 @@ class App(customtkinter.CTk):
             text_color="Green",
             command=self.load_weather_data
         )
-        self.refresh.place(x=665, y=148)
+        self.refresh.place(x=700, y=135)
         
 
         # Create tabview
         self.tabview1 = customtkinter.CTkTabview(self, width=500, height=650)
         self.tabview1.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
 
-        self.arrow_button = customtkinter.CTkButton(self, text="<<", width=40, command=self.toggle_side_panel)
-        self.arrow_button.place(x=self.winfo_width()-50, y=self.winfo_height()-730) 
+        self.arrow_button = customtkinter.CTkButton(self, text="❮❮",width=20,font=("Arial",20) ,command=self.toggle_side_panel)
+        self.arrow_button.place(x=self.winfo_width()-45, y=self.winfo_height()-755) 
 
         # Side panel (initially hidden)
         self.side_panel = customtkinter.CTkFrame(
@@ -275,7 +278,7 @@ class App(customtkinter.CTk):
               
         )
         
-        self.side_panel.place(x=self.winfo_width(), y=240)
+        self.side_panel.place(x=self.winfo_width(), y=205)
         self.side_panel.lift()
     
 
@@ -400,9 +403,12 @@ class App(customtkinter.CTk):
                     raise ValueError("API key not found in environment variables")
 
                 url = f"http://api.openweathermap.org/data/2.5/weather?appid={API_KEY}&q={city}&units=metric"
-                response = requests.get(url)
+                start = time.time()
+                
+                response = requests.get(url, timeout=2)
                 data = response.json()
-
+                print("Fetch time:", time.time() - start)
+                
                 # Extract data
                 city_name = data["name"]
                 temp = data["main"]["temp"]
@@ -412,9 +418,15 @@ class App(customtkinter.CTk):
 
                 # Schedule GUI updates on main thread
                 self.after(0, lambda: self.update_weather_ui(city_name, temp, desc, humidity, icon))
+            
+            except requests.exceptions.Timeout:
+                print("⏰ Request timed out!")
+                self.after(0, lambda: self.city_var.set("⚠️ Slow internet"))
+            
             except Exception as e:
                 print(f"Error loading weather: {e}")
-                self.after(0, lambda: self.city_var.set("❌ Error"))
+                self.after(0, lambda: self.city_var.set("❌ No internet"))
+            
 
         threading.Thread(target=fetch_weather, daemon=True).start()
 
@@ -453,14 +465,14 @@ class App(customtkinter.CTk):
             self.calculator_app = MultiUtilityApp(self.top)
             back = customtkinter.CTkButton(
             self.top,
-            text="←",
-            font=customtkinter.CTkFont(weight="bold",size=40),
+            text="く",
+            font=customtkinter.CTkFont(weight="bold",size=25),
             fg_color="transparent",
             text_color="#4d79ff",
-            height=12,
+            #height=8,
             command=lambda: self.top.grid_forget())
         
-            back.place(x=1, y=1)
+            back.place(x=0, y=5)
             back.configure(hover=False)
 
         else:
@@ -484,14 +496,14 @@ class App(customtkinter.CTk):
             
             back = customtkinter.CTkButton(
             self.top2,
-            text="←",
-            font=customtkinter.CTkFont(weight="bold",size=40),
+            text="く",
+            font=customtkinter.CTkFont(weight="bold",size=25),
             fg_color="transparent",
             text_color="#4d79ff",
-            height=12,
+            #height=8,
             command=lambda: self.top2.grid_forget())
         
-            back.place(x=1, y=1)
+            back.place(x=0, y=4)
             back.configure(hover=False)
             
         else:
@@ -512,10 +524,10 @@ class App(customtkinter.CTk):
     def toggle_side_panel(self):
         if self.side_panel_open:
             self.animate_slide_out()
-            self.arrow_button.configure(text="<<")
+            self.arrow_button.configure(text="❮❮")
         else:
             self.animate_slide_in()
-            self.arrow_button.configure(text=">>")
+            self.arrow_button.configure(text="❯❯")
 
         self.side_panel_open = not self.side_panel_open
 
