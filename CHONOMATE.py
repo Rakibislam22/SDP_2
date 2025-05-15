@@ -7,6 +7,7 @@ from pathlib import Path
 from playsound import playsound
 from alif_calculator import MultiUtilityApp
 from music import MusicPlayer
+from video_player import VideoPlayerApp
 from WorldC_Clock import TimezoneConverter
 from PIL import Image,ImageTk
 from io import BytesIO
@@ -187,7 +188,7 @@ class App(customtkinter.CTk):
         self.weather_frame = customtkinter.CTkFrame(self.center_wrapper, fg_color="transparent")
         self.weather_frame.grid(row=0, column=1, padx=190, sticky="w")
 
-        self.le = customtkinter.CTkLabel(self.clock_frame,text=".")
+        self.le = customtkinter.CTkLabel(self.clock_frame,text=".",text_color="#3e3f40")
         self.le.pack()
 
 
@@ -284,15 +285,20 @@ class App(customtkinter.CTk):
 
 
         img_path = Path(__file__).resolve().parent / "image" / "cal.png"
-        self.image = customtkinter.CTkImage(light_image=Image.open(img_path), size=(60, 60))
+        self.cal_img = customtkinter.CTkImage(light_image=Image.open(img_path), size=(60, 60))
 
         img_path2 = Path(__file__).resolve().parent / "image" / "music.png"
-        self.image2 = customtkinter.CTkImage(light_image=Image.open(img_path2), size=(60, 60))
+        self.music_img = customtkinter.CTkImage(light_image=Image.open(img_path2), size=(60, 60))
+
+        img_path3 = Path(__file__).resolve().parent / "image" / "video.png"
+        self.video_img = customtkinter.CTkImage(light_image=Image.open(img_path3), size=(60, 60))
+
+        
 
         # Button to launch lonch_cal_btn function
         self.image_button = customtkinter.CTkButton(
         self.side_panel,
-        image=self.image,
+        image=self.cal_img,
         text="",
         command=self.lonch_cal_btn,
         width=30,
@@ -302,9 +308,10 @@ class App(customtkinter.CTk):
         )
         self.image_button.pack(padx=5,pady=5)
 
+        # Button to launch lonch_music_btn function
         self.image_button2 = customtkinter.CTkButton(
         self.side_panel,
-        image=self.image2,
+        image=self.music_img,
         text="",
         command=self.lonch_music_btn,
         width=30,
@@ -313,6 +320,21 @@ class App(customtkinter.CTk):
         hover_color="#888fba"
         )
         self.image_button2.pack(padx=5,pady=5)
+
+
+        # Button to launch lonch_video_btn function
+        self.image_button2 = customtkinter.CTkButton(
+        self.side_panel,
+        image=self.video_img,
+        text="",
+        command=self.lonch_video_btn,
+        width=30,
+        height=30,
+        fg_color="transparent",
+        hover_color="#888fba"
+        )
+        self.image_button2.pack(padx=5,pady=5)
+
 
         self.side_panel_open = False
 
@@ -452,75 +474,105 @@ class App(customtkinter.CTk):
     
 
     def lonch_cal_btn(self):
-        if hasattr(self, 'top2') and self.top2.winfo_exists():
-            self.top2.grid_forget()
+        if hasattr(self, 'music') and self.music.winfo_exists():
+            self.music.grid_forget()
+        if hasattr(self, 'video') and self.video.winfo_exists():
+            self.video.grid_forget()
 
         self.toggle_side_panel()
 
         mode = (customtkinter.get_appearance_mode()).lower()
 
-        if not hasattr(self, 'top') or not self.top.winfo_exists():
-            self.top = customtkinter.CTkFrame(self)
-            self.top.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
-            self.calculator_app = MultiUtilityApp(self.top)
+        if not hasattr(self, 'cal') or not self.cal.winfo_exists():
+            self.cal = customtkinter.CTkFrame(self)
+            self.cal.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
+            self.calculator_app = MultiUtilityApp(self.cal)
             back = customtkinter.CTkButton(
-            self.top,
-            text="く",
+            self.cal,
+            text="❮",
+            width=1,
             font=customtkinter.CTkFont(weight="bold",size=25),
             fg_color="transparent",
             text_color="#4d79ff",
             #height=8,
-            command=lambda: self.top.grid_forget())
+            command=lambda: self.cal.grid_forget())
         
-            back.place(x=0, y=5)
+            back.place(x=30, y=15)
             back.configure(hover=False)
 
         else:
-            self.top.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
+            self.cal.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
             
 
         self.calculator_app.change_mode(mode)
-        #self.top.bind("<Button-1>", self.toggle_side_panel)
-
+        
 
     def lonch_music_btn(self):
-        if hasattr(self, 'top') and self.top.winfo_exists():
-            self.top.grid_forget()
+        if hasattr(self, 'cal') and self.cal.winfo_exists():
+            self.cal.grid_forget() 
+        if hasattr(self, 'video') and self.video.winfo_exists():
+            self.video.grid_forget()
 
         self.toggle_side_panel()
 
-        if not hasattr(self, 'top2') or not self.top2.winfo_exists():
-            self.top2 = customtkinter.CTkFrame(self)
-            self.top2.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
-            self.music_player = MusicPlayer(self.top2)
+        if not hasattr(self, 'music') or not self.music.winfo_exists():
+            self.music = customtkinter.CTkFrame(self)
+            self.music.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
+            self.music_player = MusicPlayer(self.music)
             
             back = customtkinter.CTkButton(
-            self.top2,
-            text="く",
+            self.music,
+            text="❮",
+            width=1,
             font=customtkinter.CTkFont(weight="bold",size=25),
             fg_color="transparent",
             text_color="#4d79ff",
             #height=8,
-            command=lambda: self.top2.grid_forget())
+            command=lambda: self.music.grid_forget())
         
-            back.place(x=0, y=4)
+            back.place(x=30, y=15)
             back.configure(hover=False)
             
         else:
-            self.top2.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
-          
-        #self.top2.bind("<Button-1>", self.toggle_side_panel)
-        
-        
-    # def toggle_side_panel(self):
-    #     if self.side_panel_open:
-    #         self.side_panel.grid_remove()
-    #         self.arrow_button.configure(text="<<")  # Pointing right
-    #     else:
-    #         self.side_panel.grid()
-    #         self.arrow_button.configure(text=">>")  # Pointing left⬅⇾
-    #     self.side_panel_open = not self.side_panel_open
+            self.music.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
 
+
+
+    def lonch_video_btn(self):
+        if hasattr(self, 'cal') and self.cal.winfo_exists():
+            self.cal.grid_forget()
+
+        if hasattr(self, 'music') and self.music.winfo_exists():
+            self.music.grid_forget()
+
+        self.toggle_side_panel()
+
+        if not hasattr(self, 'video_player') or not self.video.winfo_exists():
+            self.video = customtkinter.CTkFrame(self)
+            self.video.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
+            
+            self.video_player = VideoPlayerApp(self.video)  # Initializes and packs inside self.video
+
+            back = customtkinter.CTkButton(
+                self.video,
+                text="❮",
+                width=1,
+                font=customtkinter.CTkFont(weight="bold", size=25),
+                fg_color="transparent",
+                text_color="#4d79ff",
+                command=lambda: self.video.grid_forget()
+            )
+            back.place(x=30, y=15)
+            back.configure(hover=False)
+
+        else:
+            self.video.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
+
+
+
+
+
+    # toggle side panel
     def toggle_side_panel(self):
         if self.side_panel_open:
             self.animate_slide_out()
@@ -697,6 +749,7 @@ class AlarmPage(customtkinter.CTkFrame):
 if __name__ == "__main__":
     app = App()
     app.mainloop()
+
 
 
 #it's work properly!!
