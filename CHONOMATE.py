@@ -483,7 +483,7 @@ class App(customtkinter.CTk):
 
         mode = (customtkinter.get_appearance_mode()).lower()
 
-        if not hasattr(self, 'cal') or not self.cal.winfo_exists():
+        if not hasattr(self, 'calculator_app') or not self.cal.winfo_exists():
             self.cal = customtkinter.CTkFrame(self)
             self.cal.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
             self.calculator_app = MultiUtilityApp(self.cal)
@@ -617,9 +617,8 @@ class App(customtkinter.CTk):
         self.after(1000, self.update_time)
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
-        global a
 
-        if hasattr(self, 'top') and self.top.winfo_exists() :
+        if hasattr(self, 'calculator_app') and self.cal.winfo_exists() :
             m = (new_appearance_mode).lower()
             self.calculator_app.change_mode(m)
             
