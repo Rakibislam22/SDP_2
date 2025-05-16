@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from CTkScrollableDropdown import CTkScrollableDropdown
 from pathlib import Path
 from playsound import playsound
+import chatbot 
 from alif_calculator import MultiUtilityApp
 from music import MusicPlayer
 from video_player import VideoPlayerApp
@@ -179,7 +180,7 @@ class App(customtkinter.CTk):
 
         self.sidebar_frame = customtkinter.CTkFrame(self, width=140, corner_radius=0)
         self.sidebar_frame.grid(row=0, column=0, rowspan=4, sticky="nsew")
-        self.sidebar_frame.grid_rowconfigure(4, weight=1)
+        self.sidebar_frame.grid_rowconfigure(4, weight=0)
 
         self.appearance_mode_label = customtkinter.CTkLabel(self.sidebar_frame, text="Appearance Mode:", anchor="w")
         self.appearance_mode_label.grid(row=0, column=0, padx=20, pady=(10, 0))
@@ -193,6 +194,15 @@ class App(customtkinter.CTk):
         self.switch_var = customtkinter.StringVar(value="on")
         self.switch = customtkinter.CTkSwitch(self.sidebar_frame, text="24 Hours", font=customtkinter.CTkFont(size=15, weight="bold"), command=self.update_time, variable=self.switch_var, onvalue="on", offvalue="off")
         self.switch.grid(row=3, column=0, padx=20, pady=10)
+
+        chronobot_btn = customtkinter.CTkButton(
+            self.sidebar_frame,
+            text="ChronoAI",
+            font=customtkinter.CTkFont("Courier New",16, weight="bold"),
+            width=3,
+            command=lambda: chatbot.open_chatbot(self)
+        )
+        chronobot_btn.place(x=45, y=750)
 
         self.top_bar_frame = customtkinter.CTkFrame(self)
         self.top_bar_frame.grid(row=0, column=1, columnspan=2, padx=5, sticky="news")
@@ -438,7 +448,7 @@ class App(customtkinter.CTk):
     def load_weather_data(self, city="Dhaka"):
         def fetch_weather():
             try:
-                API_KEY = os.getenv("G_API_KEY")
+                API_KEY = os.getenv("W_API_KEY")
                 if not API_KEY:
                     raise ValueError("API key not found in environment variables")
 
