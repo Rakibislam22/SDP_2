@@ -1,4 +1,1 @@
-D:/movies/Gravity (2013) 1080p WEBRip.mkv
-D:/movies/Inception (2010) 2160p BluRay.mkv
-D:/movies/Hi Nanna (2023) Dual ORG 1080p.mkv
-C:/Users/ADMIN/Downloads/WhatsApp Video .mp4
+sound\sample.mp4
