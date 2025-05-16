@@ -106,7 +106,7 @@ class App(customtkinter.CTk):
             height=1,
             fg_color="transparent",
             bg_color="transparent",
-            text_color="#9e9e9e",
+            text_color="#848383",
             cursor="hand2"  # Changes cursor to hand on hover
         )
         Water_mark.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
@@ -202,7 +202,7 @@ class App(customtkinter.CTk):
             width=3,
             command= self.show_Ai
         )
-        chronobot_btn.place(x=45, y=770)
+        chronobot_btn.place(x=42, y=775)
 
         self.top_bar_frame = customtkinter.CTkFrame(self)
         self.top_bar_frame.grid(row=0, column=1, columnspan=2, padx=5, sticky="news")
@@ -452,25 +452,36 @@ class App(customtkinter.CTk):
             self.unbind("<Escape>")
         else:
             if not hasattr(self, "chatbot_f") or not self.chatbot_f:
-                self.chatbot_f = customtkinter.CTkFrame(self, width=505, height=595,fg_color="transparent",corner_radius=8)
+                self.chatbot_f = customtkinter.CTkFrame(
+                    self,
+                    width=505,
+                    height=595,
+                    fg_color="transparent",
+                    corner_radius=10,
+                    
+                )
                 self.chatbot_f.pack_propagate(False)
-                self.chatbot_f.place(x=300, y=470, anchor="center")
+                self.chatbot_f.place(x=295, y=472, anchor="center")
+
+                chatbot_t = customtkinter.CTkLabel(self.chatbot_f,text=" ChronoAI ", font=customtkinter.CTkFont("Courier New",18, weight="bold"))
+                chatbot_t.place(x=190,y=1)
 
                 cross_b = customtkinter.CTkButton(
                     self.chatbot_f,
                     text="❌",
-                    width=2,
+                    text_color="red",
+                    width=0,
                     fg_color="transparent",
-                    hover_color="red",
                     command=self.destroy_chatbot_frame
                 )
                 cross_b.pack(anchor="e")
+                cross_b.configure(hover=False)
 
                 chatbot.open_chatbot(self.chatbot_f)
                 self.chatbot_initialized = True
             else:
                 # Chatbot frame exists but hidden, show it again
-                self.chatbot_f.place(x=300, y=470, anchor="center")
+                self.chatbot_f.place(x=295, y=472, anchor="center")
 
             self.bind("<Button-1>", self.check_click_outside)
             self.bind("<Escape>", self.check_click_outside)

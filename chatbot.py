@@ -1,6 +1,7 @@
 from customtkinter import *
 import google.generativeai as ai
 import threading
+import webbrowser
 import time
 import os
 from dotenv import load_dotenv
@@ -80,12 +81,29 @@ def open_chatbot(chatbot_main_windo):
     chatbot_send_btn = CTkButton(chatbot_frame, font=("Helvetica", 16, "bold"), text="Send", width=70, height=48, command = get_message,)
     chatbot_send_btn.place( x=427+35, y=502+23, anchor="center")
 
-    copyrights = CTkLabel(chatbot_frame, text="© alifjobaer12", font=("Calibri", 10), corner_radius=0, width=1, height=1, fg_color="transparent", bg_color="transparent", text_color="#9e9e9e", )
+    def open_alif_github(event=None):
+        webbrowser.open_new("https://github.com/alifjobaer12")  
+
+    copyrights = CTkLabel(
+        chatbot_frame,
+        text="© alifjobaer12",
+        font=("Calibri", 10),
+        corner_radius=0,
+        width=1,
+        height=1,
+        fg_color="transparent",
+        bg_color="transparent",
+        text_color="#848383",
+        cursor="hand2"  # shows pointer on hover
+    )
     copyrights.place(
         x=460+35, 
         y=542+23, 
         anchor="se"
     )
+    
+    copyrights.bind("<Button-1>", open_alif_github)
+
 
 
 
