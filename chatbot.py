@@ -64,31 +64,8 @@ def open_chatbot(chatbot_main_windo):
         see_message(r+"\n\n")
 
 
-    chatbot_window = CTkToplevel(chatbot_main_windo)
-    chatbot_window.title("ChronoAI - Your Time Assistant")
-    chatbot_window.geometry("505x575")
-    chatbot_window.resizable(False, False)
-
-    # Center it
-    chatbot_window.update_idletasks()
-    main_x = chatbot_main_windo.winfo_rootx()
-    main_y = chatbot_main_windo.winfo_rooty()
-    main_width = chatbot_main_windo.winfo_width()
-    main_height = chatbot_main_windo.winfo_height()
-    chatbot_width = 500
-    chatbot_height = 570
-    x = main_x + (main_width // 2) - (chatbot_width // 2)
-    y = main_y + (main_height // 2) - (chatbot_height // 2)
-    chatbot_window.geometry(f"{chatbot_width}x{chatbot_height}+{x}+{y}")
-
-    # Focus & bring to front
-    chatbot_window.lift()
-    chatbot_window.focus_force()
-    chatbot_window.attributes("-topmost", True)
-    chatbot_window.after(500, lambda: chatbot_window.attributes("-topmost", False))
-
     #Frame for Chatbot
-    chatbot_frame = CTkFrame(chatbot_window, fg_color="light blue", width=400, height=500 )
+    chatbot_frame = CTkFrame(chatbot_main_windo, fg_color="light blue", width=400, height=500 )
     chatbot_frame.pack(side="top", expand=True, fill="both",)
 
     chatbot_chatbox = CTkTextbox(chatbot_frame, wrap="word", font=("JetBrains Mono", 14), state="normal", width=500, height=490, text_color="white",  fg_color="black")
@@ -104,7 +81,11 @@ def open_chatbot(chatbot_main_windo):
     chatbot_send_btn.place( x=427+35, y=502+23, anchor="center")
 
     copyrights = CTkLabel(chatbot_frame, text="© alifjobaer12", font=("Calibri", 10), corner_radius=0, width=1, height=1, fg_color="transparent", bg_color="transparent", text_color="#9e9e9e", )
-    copyrights.place(x=495, y=510+50, anchor="e") 
+    copyrights.place(
+        x=460+35, 
+        y=542+23, 
+        anchor="se"
+    )
 
 
 

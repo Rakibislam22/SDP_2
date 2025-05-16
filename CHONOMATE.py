@@ -33,9 +33,6 @@ class WelcomePage(customtkinter.CTkFrame):
         self.label = customtkinter.CTkLabel(self, text="", font=customtkinter.CTkFont("Courier New", 35, "bold"))
         self.label.pack(pady=80)
 
-        
-
-
         self.dev_label = customtkinter.CTkLabel(self, text="Developed by Team ChronoMate", font=customtkinter.CTkFont("Helvetica", 20), text_color="gray")
         self.dev_label.pack(pady=(50, 40))
 
@@ -92,6 +89,9 @@ class App(customtkinter.CTk):
         self.title("ChronoMate")
         self.geometry("1060x870")
         self.show_welcome()
+
+        self.chatbot_f = None
+        self.chatbot_initialized = False
         
 
         def open_github(event=None):
@@ -200,9 +200,9 @@ class App(customtkinter.CTk):
             text="ChronoAI",
             font=customtkinter.CTkFont("Courier New",16, weight="bold"),
             width=3,
-            command=lambda: chatbot.open_chatbot(self)
+            command= self.show_Ai
         )
-        chronobot_btn.place(x=45, y=750)
+        chronobot_btn.place(x=45, y=770)
 
         self.top_bar_frame = customtkinter.CTkFrame(self)
         self.top_bar_frame.grid(row=0, column=1, columnspan=2, padx=5, sticky="news")
@@ -253,7 +253,7 @@ class App(customtkinter.CTk):
         )
         self.city_label.grid(row=0, column=0, columnspan=2, pady=(5, 10), sticky="n")
 
-        # Weather Icon (left) + Temperature (right)
+        
         self.icon_label = customtkinter.CTkLabel(self.weather_frame, text="")
         self.icon_label.grid(row=1, column=0, padx=(10, 5), sticky="e")
 
@@ -443,6 +443,69 @@ class App(customtkinter.CTk):
             customtkinter.CTkImage(light_image=Image.open(self.drive / "image" / path), size=(40, 40))
             for path in img_paths
         ]
+
+    #chatbot Frame
+    def show_Ai(self):
+        if hasattr(self, "chatbot_f") and self.chatbot_f and self.chatbot_f.winfo_ismapped():
+            self.chatbot_f.place_forget()
+            self.unbind("<Button-1>")
+            self.unbind("<Escape>")
+        else:
+            if not hasattr(self, "chatbot_f") or not self.chatbot_f:
+                self.chatbot_f = customtkinter.CTkFrame(self, width=505, height=595,fg_color="transparent",corner_radius=8)
+                self.chatbot_f.pack_propagate(False)
+                self.chatbot_f.place(x=300, y=470, anchor="center")
+
+                cross_b = customtkinter.CTkButton(
+                    self.chatbot_f,
+                    text="❌",
+                    width=2,
+                    fg_color="transparent",
+                    hover_color="red",
+                    command=self.destroy_chatbot_frame
+                )
+                cross_b.pack(anchor="e")
+
+                chatbot.open_chatbot(self.chatbot_f)
+                self.chatbot_initialized = True
+            else:
+                # Chatbot frame exists but hidden, show it again
+                self.chatbot_f.place(x=300, y=470, anchor="center")
+
+            self.bind("<Button-1>", self.check_click_outside)
+            self.bind("<Escape>", self.check_click_outside)
+
+    def destroy_chatbot_frame(self):
+        if self.chatbot_f:
+            self.chatbot_f.destroy()
+            self.chatbot_f = None
+            self.chatbot_initialized = False  # So it can be reloaded again
+            self.unbind("<Button-1>")
+            self.unbind("<Escape>")
+
+    def check_click_outside(self, event):
+        if self.chatbot_f and self.chatbot_f.winfo_exists():
+            # Get frame's screen coordinates
+            x1 = self.chatbot_f.winfo_rootx()
+            y1 = self.chatbot_f.winfo_rooty()
+            x2 = x1 + self.chatbot_f.winfo_width()
+            y2 = y1 + self.chatbot_f.winfo_height()
+
+            destroy = False
+            if hasattr(event, "keysym") and event.keysym == "Escape":
+                destroy = True
+            else:
+                # Check if click was outside the chatbot frame
+                destroy = not (x1 <= event.x_root <= x2 and y1 <= event.y_root <= y2)
+
+            if destroy:
+                self.chatbot_f.place_forget()  # ✅ only hide
+                self.unbind("<Button-1>")
+                self.unbind("<Escape>")
+
+
+
+
 
 
     def load_weather_data(self, city="Dhaka"):
