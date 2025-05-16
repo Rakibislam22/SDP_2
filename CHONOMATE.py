@@ -13,6 +13,7 @@ from PIL import Image,ImageTk
 from io import BytesIO
 import threading
 import os
+import webbrowser
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -88,13 +89,30 @@ class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
         self.title("ChronoMate")
-        self.geometry("1100x900")
+        self.geometry("1060x870")
         self.show_welcome()
         
 
-        Water_mark = customtkinter.CTkLabel(self, text="© rakibislam22", font=("Calibri", 15), corner_radius=0, width=1, height=1, fg_color="transparent", bg_color="transparent", text_color="#9e9e9e", )
+        def open_github(event=None):
+            webbrowser.open_new("https://github.com/rakibislam22")
+
+        Water_mark = customtkinter.CTkLabel(
+            self,
+            text="© rakibislam22",
+            font=("Calibri", 15),
+            corner_radius=0,
+            width=1,
+            height=1,
+            fg_color="transparent",
+            bg_color="transparent",
+            text_color="#9e9e9e",
+            cursor="hand2"  # Changes cursor to hand on hover
+        )
         Water_mark.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
-        
+
+        # Bind left mouse click to open the link
+        Water_mark.bind("<Button-1>", open_github)
+                
 
     def show_welcome(self):
         self.welcome = WelcomePage(self, self.start_main_app)
@@ -268,7 +286,7 @@ class App(customtkinter.CTk):
         self.tabview1.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
 
         self.arrow_button = customtkinter.CTkButton(self, text="❮❮",width=20,font=("Arial",20) ,command=self.toggle_side_panel)
-        self.arrow_button.place(x=self.winfo_width()-45, y=self.winfo_height()-755) 
+        self.arrow_button.place(x=1018, y=145) 
 
         # Side panel (initially hidden)
         self.side_panel = customtkinter.CTkFrame(

@@ -3,6 +3,7 @@ import time
 import ctypes
 import pathlib
 import threading
+import webbrowser
 import urllib.parse
 import customtkinter as ctk
 from tkinter import filedialog
@@ -111,8 +112,18 @@ class VideoPlayerApp:
         tool_frame.grid_columnconfigure((0, 1, 3), weight=0)
         tool_frame.grid_columnconfigure(2, weight=1)
 
-        self.name_right = ctk.CTkLabel(self.bottom_frame, text="©Ismail Hossain", font=("Arial", 10, "bold"))
+        def open_ismail_github(event=None):
+            webbrowser.open_new("https://github.com/kenshiro147") 
+
+        self.name_right = ctk.CTkLabel(
+            self.bottom_frame,
+            text="©Ismail Hossain",
+            font=("Arial", 10, "bold"),
+            cursor="hand2",  # Hand cursor on hover
+            text_color="#9e9e9e"  # Optional: consistent style
+        )
         self.name_right.pack(anchor="se", padx=10, pady=(0, 5))
+        self.name_right.bind("<Button-1>", open_ismail_github)
 
 
         
