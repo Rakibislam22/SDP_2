@@ -10,10 +10,11 @@ from alif_calculator import MultiUtilityApp
 from music import MusicPlayer
 from video_player import VideoPlayerApp
 from WorldC_Clock import TimezoneConverter
-from PIL import Image,ImageTk
+from PIL import Image, ImageTk, ImageSequence
 from io import BytesIO
 import threading
 import os
+import warnings
 import webbrowser
 from dotenv import load_dotenv
 load_dotenv()
@@ -21,6 +22,12 @@ load_dotenv()
 
 customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("dark-blue")  # Themes: "blue" (standard), "green", "dark-blue"
+
+warnings.filterwarnings(
+    "ignore",
+    message="CTkLabel Warning: Given image is not CTkImage but <class 'PIL.ImageTk.PhotoImage'>.*",
+    category=UserWarning,
+)
 
 class WelcomePage(customtkinter.CTkFrame):
     def __init__(self, master, on_finish_callback):
@@ -195,6 +202,15 @@ class App(customtkinter.CTk):
         self.switch = customtkinter.CTkSwitch(self.sidebar_frame, text="24 Hours", font=customtkinter.CTkFont(size=15, weight="bold"), command=self.update_time, variable=self.switch_var, onvalue="on", offvalue="off")
         self.switch.grid(row=3, column=0, padx=20, pady=10)
 
+        self.drive = Path(__file__).resolve().parent
+        gif_path = self.drive / "image" / "Chrono.gif"
+        self.chrono = Image.open(gif_path)
+
+        self.frames = [ImageTk.PhotoImage(f.convert("RGBA")) for f in ImageSequence.Iterator(self.chrono)]
+        self.frame_index = 0
+
+        self.chrono_labale = customtkinter.CTkLabel(self.sidebar_frame,text="")
+        self.chrono_labale.place(x=65, y=725)
         chronobot_btn = customtkinter.CTkButton(
             self.sidebar_frame,
             text="ChronoAI",
@@ -222,20 +238,20 @@ class App(customtkinter.CTk):
 
         self.time_label = customtkinter.CTkLabel(
             self.top_bar_frame,
-            font=customtkinter.CTkFont("Segoe UI", 60, weight="bold"),
+            font=customtkinter.CTkFont("Segoe UI", 70, weight="bold"),
             text="--:--"
         )
-        self.time_label.place(x=270, y=35)
+        self.time_label.place(x=250, y=20)
 
         self.pam_label = customtkinter.CTkLabel(
             self.top_bar_frame,
-            font=customtkinter.CTkFont("Helvetica", 25),
+            font=customtkinter.CTkFont("Helvetica", 35),
             text="--",
         )
-        self.pam_label.place(x=440, y=65)
+        self.pam_label.place(x=440, y=50)
 
-        self.date_label = customtkinter.CTkLabel(self.top_bar_frame, font=customtkinter.CTkFont("Helvetica", 22, "bold"), text="Loading...")
-        self.date_label.place(x=295, y=125)
+        self.date_label = customtkinter.CTkLabel(self.top_bar_frame, font=customtkinter.CTkFont("Helvetica", 32, "bold"), text="Loading...")
+        self.date_label.place(x=265, y=110)
 
         
 
@@ -367,6 +383,8 @@ class App(customtkinter.CTk):
         self.side_panel_open = False
 
 
+        self.switch_var.trace_add("write", self.on_switch_toggle)
+
         # Add tabs
         for tab in self.tab_n:
             self.tabview1.add(tab)
@@ -381,7 +399,8 @@ class App(customtkinter.CTk):
         alarm_tab.grid_rowconfigure(2, weight=1)
         alarm_tab.grid_columnconfigure(0, weight=1)
         alarm_tab.grid_columnconfigure(2, weight=1)
-        self.alarm_page = AlarmPage(alarm_tab, on_finish_callback=self.on_alarm_triggered)
+        # Pass switch_var when creating AlarmPage
+        self.alarm_page = AlarmPage(alarm_tab, switch_var=self.switch_var, on_finish_callback=self.on_alarm_triggered)
         self.alarm_page.grid(row=0, column=1)
         
         wc_tab = self.tabview1.tab("World Clock")
@@ -413,9 +432,21 @@ class App(customtkinter.CTk):
 
         self.appearance_mode_optionemenu.set("Dark")
         self.mode=customtkinter.get_appearance_mode()
+        self.animate()
    
     
-        
+    #track switch_var
+    def on_switch_toggle(self, *args):
+        if hasattr(self, "alarm_page"):
+            self.alarm_page.update_layout_based_on_switch()
+
+
+    
+    #Gif animation
+    def animate(self):
+        self.chrono_labale.configure(image=self.frames[self.frame_index])
+        self.frame_index = (self.frame_index + 1) % len(self.frames)
+        self.after(self.chrono.info.get("duration", 100), self.animate)  
 
     # Start preloading resources (weather, images, classes, etc.)
     def start_preloading(self):
@@ -461,7 +492,7 @@ class App(customtkinter.CTk):
                     
                 )
                 self.chatbot_f.pack_propagate(False)
-                self.chatbot_f.place(x=295, y=472, anchor="center")
+                self.chatbot_f.place(x=295, y=425, anchor="center")
 
                 chatbot_t = customtkinter.CTkLabel(self.chatbot_f,text=" ChronoAI ", font=customtkinter.CTkFont("Courier New",18, weight="bold"))
                 chatbot_t.place(x=190,y=1)
@@ -481,7 +512,7 @@ class App(customtkinter.CTk):
                 self.chatbot_initialized = True
             else:
                 # Chatbot frame exists but hidden, show it again
-                self.chatbot_f.place(x=295, y=472, anchor="center")
+                self.chatbot_f.place(x=295, y=425, anchor="center")
 
             self.bind("<Button-1>", self.check_click_outside)
             self.bind("<Escape>", self.check_click_outside)
@@ -730,72 +761,133 @@ class App(customtkinter.CTk):
 
 
 class AlarmPage(customtkinter.CTkFrame):
-    def __init__(self, master, on_finish_callback):
+    def __init__(self, master, switch_var, on_finish_callback):
         super().__init__(master)
         self.master = master
         self.on_finish_callback = on_finish_callback
 
-        self.configure(fg_color="transparent")
+        self.switch_var = switch_var
 
-        self.alarm_time_label = customtkinter.CTkLabel(self, text="Hours", font=customtkinter.CTkFont("Arial", 18))
-        self.alarm_time_label.grid(row=0,column=0)
-        self.alarm_time_label = customtkinter.CTkLabel(self, text="Minutes", font=customtkinter.CTkFont("Arial", 18))
-        self.alarm_time_label.grid(row=0,column=1)
-        self.alarm_time_label = customtkinter.CTkLabel(self, text="Seconds", font=customtkinter.CTkFont("Arial", 18))
-        self.alarm_time_label.grid(row=0,column=2)
+        self.configure(fg_color="transparent")
+        
+
+        # Labels
+        self.alarm_hours_label = customtkinter.CTkLabel(self, text="Hours", font=customtkinter.CTkFont("Arial", 18))
+        self.minute_label = customtkinter.CTkLabel(self, text="Minutes", font=customtkinter.CTkFont("Arial", 18))
+        self.activate_switch = customtkinter.CTkSwitch(self, text="Activate", command=self.set_alarm,width=4)
+        self.choose_sound_button = customtkinter.CTkButton(self, text="Choose Sound", command=self.choose_sound,width=4)
+        
+
 
         #self.scrollable_frame1 = customtkinter.CTkScrollableFrame(self)
         #self.scrollable_frame1.grid(row=1, column=0, padx=5,pady=10)
 
         hour= [f"{i:02}" for i in range(1, 13)]
+        hour24= [f"{i:02}" for i in range(1, 25)]
         minute = [f"{i:02}" for i in range(60)]
-        second = [f"{i:02}" for i in range(60)]
 
         self.hour_cb = customtkinter.CTkComboBox(self, values=hour,justify='center',state="readonly")
+        self.hour_24 = customtkinter.CTkComboBox(self, values=hour24,justify='center',state="readonly")
         self.minute_cb = customtkinter.CTkComboBox(self, values=minute,justify='center',state="readonly")
-        self.second_cb = customtkinter.CTkComboBox(self, values=second,justify='center',state="readonly")
         self.period_cb = customtkinter.CTkComboBox(self, values=["AM", "PM"],justify='center',state="readonly")
 
         CTkScrollableDropdown(self.hour_cb, values=hour)
+        CTkScrollableDropdown(self.hour_24, values=hour24)
         CTkScrollableDropdown(self.minute_cb, values=minute)
-        CTkScrollableDropdown(self.second_cb, values=second)
 
-        self.hour_cb.grid(row=1, column=0, padx=5, pady=2)
-        self.minute_cb.grid(row=1, column=1, padx=5, pady=2)
-        self.second_cb.grid(row=1, column=2, padx=5, pady=2)
-        self.period_cb.grid(row=1, column=3, padx=5, pady=2)
+        # ComboBoxes
+        if self.switch_var.get() == "on":
+            self.hour_24.grid(row=1, column=1, padx=5, pady=2)         
+            self.minute_cb.grid(row=1, column=2, padx=5, pady=2)
+            #for lable
+            self.alarm_hours_label.grid(row=0, column=1, columnspan=1, pady=0)
+            self.minute_label.grid(row=0, column=2, columnspan=1, pady=0)
+            #for button & switch
+            self.activate_switch.grid(row=3, column=2, pady=20)
+            self.choose_sound_button.grid(row=1, column=3,padx=10, pady=20)
+        else:
+            self.hour_cb.grid(row=1, column=1, padx=5, pady=2)
+            self.minute_cb.grid(row=1, column=2, padx=5, pady=2)
+            self.period_cb.grid(row=1, column=3, padx=5, pady=2)
+            #for lable
+            self.alarm_hours_label.grid(row=0, column=0, columnspan=1, pady=0)
+            self.minute_label.grid(row=0, column=1, columnspan=1, pady=0)
+            #for button & switch
+            self.activate_switch.grid(row=3, column=1,padx=20, pady=20)
+            self.choose_sound_button.grid(row=2, column=1, pady=20)
 
-        self.activate_switch = customtkinter.CTkSwitch(self, text="Activate", command=self.set_alarm)
-        self.activate_switch.grid(row=2, column=1, pady=10)
+        
+        
 
-        self.sound_label = customtkinter.CTkLabel(self, text="Choose Alarm Sound", font=customtkinter.CTkFont("Arial", 18))
-        self.sound_label.grid(row=3, column=1, pady=(20, 5))
 
-        self.choose_sound_button = customtkinter.CTkButton(self, text="Choose Sound", command=self.choose_sound)
-        self.choose_sound_button.grid(row=4, column=1, pady=10)
+        
 
         self.selected_sound = None
         self.alarm_time = None
         self.alarm_active = False  # NEW: Flag to know alarm is ringing
 
         # Snooze and Stop buttons
-        self.snooze_button = customtkinter.CTkButton(self, text="Snooze", command=self.snooze_alarm, state="disabled")
-        self.stop_button = customtkinter.CTkButton(self, text="Stop", command=self.stop_alarm, state="disabled")
-        self.snooze_button.grid(row=5, column=0, pady=20)
-        self.stop_button.grid(row=5, column=2, pady=20)
+        # self.snooze_button = customtkinter.CTkButton(self, text="Snooze", command=self.snooze_alarm, state="disabled")
+        # self.stop_button = customtkinter.CTkButton(self, text="Stop", command=self.stop_alarm, state="disabled")
+        # self.snooze_button.grid(row=5, column=0, pady=20)
+        # self.stop_button.grid(row=5, column=2, pady=20)
+
+        self.hour_cb.set("07")
+        self.hour_24.set("07")
+        self.minute_cb.set("00")
+        self.period_cb.set("AM")
+        
+    
+
+    
+    #Get Updated Switch_var
+    def update_layout_based_on_switch(self):
+        # Remove existing widgets
+        self.hour_cb.grid_forget()
+        self.hour_24.grid_forget()
+        self.minute_cb.grid_forget()
+        self.period_cb.grid_forget()
+        self.alarm_hours_label.grid_forget()
+        self.minute_label.grid_forget()
+
+        # Re-grid based on current switch_var value
+        if self.switch_var.get() == "on":
+            self.hour_24.grid(row=1, column=1, padx=5, pady=2)         
+            self.minute_cb.grid(row=1, column=2, padx=5, pady=2)
+            #for lable
+            self.alarm_hours_label.grid(row=0, column=1, columnspan=1, pady=0)
+            self.minute_label.grid(row=0, column=2, columnspan=1, pady=0)
+            #for button & switch
+            self.activate_switch.grid(row=3, column=2, pady=20)
+            self.choose_sound_button.grid(row=1, column=3,padx=10, pady=20)
+            
+        else:
+            self.hour_cb.grid(row=1, column=0, padx=5, pady=2)
+            self.minute_cb.grid(row=1, column=1, padx=5, pady=2)
+            self.period_cb.grid(row=1, column=2, padx=5, pady=2)
+            #for lable
+            self.alarm_hours_label.grid(row=0, column=0, columnspan=1, pady=0)
+            self.minute_label.grid(row=0, column=1, columnspan=1, pady=0)
+            #for button & switch
+            self.activate_switch.grid(row=3, column=1,padx=20,pady=20)
+            self.choose_sound_button.grid(row=2, column=1, pady=20)
+
 
     def set_alarm(self):
-        hour = int(self.hour_cb.get())
-        minute = int(self.minute_cb.get())
-        second = int(self.second_cb.get())
-        period = self.period_cb.get()
+        if self.switch_var.get() == "on":
+            hour = int(self.hour_cb.get())
+            minute = int(self.minute_cb.get())
+        else:    
+            hour = int(self.hour_cb.get())
+            minute = int(self.minute_cb.get())
+            period = self.period_cb.get()
 
-        if period == "PM" and hour != 12:
-            hour += 12
-        if period == "AM" and hour == 12:
-            hour = 0
+            if period == "PM" and hour != 12:
+                hour += 12
+            if period == "AM" and hour == 12:
+                hour = 0
 
-        self.alarm_time = datetime.now().replace(hour=hour, minute=minute, second=second, microsecond=0).time()
+        self.alarm_time = datetime.now().replace(hour=hour, minute=minute, second=0, microsecond=0).time()
         print(f"Alarm set for: {self.alarm_time}")
         self.alarm_active = True
         self.check_alarm()
