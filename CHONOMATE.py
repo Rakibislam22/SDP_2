@@ -97,7 +97,7 @@ class App(customtkinter.CTk):
         self.geometry("1060x870")
         self.show_welcome()
 
-        self.chatbot_f = None
+        self.sound = None
         self.chatbot_initialized = False
         
 
@@ -549,7 +549,7 @@ class App(customtkinter.CTk):
 
 
 
-
+    #Weather frame
     def load_weather_data(self, city="Dhaka"):
         def fetch_weather():
             try:
@@ -767,15 +767,26 @@ class AlarmPage(customtkinter.CTkFrame):
         self.on_finish_callback = on_finish_callback
 
         self.switch_var = switch_var
+        
+        self.sound = None
+        self.sound_initialized = False
 
         self.configure(fg_color="transparent")
+
+        self.alarm_frame = customtkinter.CTkFrame(self)
+        self.alarm_frame.pack()
         
 
         # Labels
-        self.alarm_hours_label = customtkinter.CTkLabel(self, text="Hours", font=customtkinter.CTkFont("Arial", 18))
-        self.minute_label = customtkinter.CTkLabel(self, text="Minutes", font=customtkinter.CTkFont("Arial", 18))
-        self.activate_switch = customtkinter.CTkSwitch(self, text="Activate", command=self.set_alarm,width=4)
-        self.choose_sound_button = customtkinter.CTkButton(self, text="Choose Sound", command=self.choose_sound,width=4)
+        self.alarm_hours_label = customtkinter.CTkLabel(self.alarm_frame, text="Hours", font=customtkinter.CTkFont("Arial", 18))
+        self.minute_label = customtkinter.CTkLabel(self.alarm_frame, text="Minutes", font=customtkinter.CTkFont("Arial", 18))
+        self.activate_switch = customtkinter.CTkSwitch(self.alarm_frame, text="Activate", command=self.set_alarm,width=4)
+        self.choose_sound_button = customtkinter.CTkButton(
+            self.alarm_frame,
+            text="Choose Sound",
+            command=self.show_sound,
+            width=120  # or adjust based on your layout
+        )
         
 
 
@@ -786,10 +797,10 @@ class AlarmPage(customtkinter.CTkFrame):
         hour24= [f"{i:02}" for i in range(1, 25)]
         minute = [f"{i:02}" for i in range(60)]
 
-        self.hour_cb = customtkinter.CTkComboBox(self, values=hour,justify='center',state="readonly")
-        self.hour_24 = customtkinter.CTkComboBox(self, values=hour24,justify='center',state="readonly")
-        self.minute_cb = customtkinter.CTkComboBox(self, values=minute,justify='center',state="readonly")
-        self.period_cb = customtkinter.CTkComboBox(self, values=["AM", "PM"],justify='center',state="readonly")
+        self.hour_cb = customtkinter.CTkComboBox(self.alarm_frame, values=hour,justify='center',state="readonly")
+        self.hour_24 = customtkinter.CTkComboBox(self.alarm_frame, values=hour24,justify='center',state="readonly")
+        self.minute_cb = customtkinter.CTkComboBox(self.alarm_frame, values=minute,justify='center',state="readonly")
+        self.period_cb = customtkinter.CTkComboBox(self.alarm_frame, values=["AM", "PM"],justify='center',state="readonly")
 
         CTkScrollableDropdown(self.hour_cb, values=hour)
         CTkScrollableDropdown(self.hour_24, values=hour24)
@@ -919,24 +930,88 @@ class AlarmPage(customtkinter.CTkFrame):
             print("No sound selected.")
 
         # Enable snooze and stop buttons
-        self.snooze_button.configure(state="normal")
-        self.stop_button.configure(state="normal")
+    #     self.snooze_button.configure(state="normal")
+    #     self.stop_button.configure(state="normal")
 
-    def snooze_alarm(self):
-        print("Snoozing alarm for 5 minutes...")
-        snooze_time = (datetime.now() + timedelta(minutes=5)).time()
-        self.alarm_time = snooze_time
-        self.alarm_active = True
-        self.snooze_button.configure(state="disabled")
-        self.stop_button.configure(state="disabled")
-        self.check_alarm()
+    def show_sound(self):
+        print("Choose Sound clicked")
 
-    def stop_alarm(self):
-        print("Alarm stopped.")
-        self.alarm_active = False
-        self.snooze_button.configure(state="disabled")
-        self.stop_button.configure(state="disabled")
-        self.on_finish_callback()
+        if not hasattr(self, "sound"):
+            self.sound = None
+
+        if self.sound and self.sound.winfo_ismapped():
+            self.sound.place_forget()
+            self.unbind("<Button-1>")
+            self.unbind("<Escape>")
+        else:
+            if not self.sound:
+                self.sound = customtkinter.CTkFrame(
+                    self,
+                    width=200,
+                    height=200,
+                    fg_color="#DC1616",
+                    border_width=2,
+                    border_color="red",
+                    corner_radius=10,
+                )
+                self.sound.pack_propagate(False)
+
+                title = customtkinter.CTkLabel(
+                    self.sound,
+                    text=" Sound List ",
+                    font=customtkinter.CTkFont("Courier New", 18, weight="bold")
+                )
+                title.place(x=20, y=10)
+
+            self.sound.place(x=400, y=300, anchor="center")
+            self.sound.lift()
+
+            self.bind("<Button-1>", self.check_click_outside)
+            self.bind("<Escape>", self.check_click_outside)
+
+
+    def destroy_chatbot_frame(self):
+        if hasattr(self, "sound") and self.sound:
+            self.sound.destroy()
+            self.sound = None
+            if hasattr(self, "alarm_frame"):
+                self.alarm_frame.unbind("<Button-1>")
+                self.alarm_frame.unbind("<Escape>")
+
+
+    def check_click_outside(self, event):
+        if self.sound and self.sound.winfo_exists():
+            x1 = self.sound.winfo_rootx()
+            y1 = self.sound.winfo_rooty()
+            x2 = x1 + self.sound.winfo_width()
+            y2 = y1 + self.sound.winfo_height()
+
+            destroy = False
+            if hasattr(event, "keysym") and event.keysym == "Escape":
+                destroy = True
+            else:
+                destroy = not (x1 <= event.x_root <= x2 and y1 <= event.y_root <= y2)
+
+            if destroy:
+                self.sound.place_forget()
+                self.unbind("<Button-1>")
+                self.unbind("<Escape>")
+
+    # def snooze_alarm(self):
+    #     print("Snoozing alarm for 5 minutes...")
+    #     snooze_time = (datetime.now() + timedelta(minutes=5)).time()
+    #     self.alarm_time = snooze_time
+    #     self.alarm_active = True
+    #     self.snooze_button.configure(state="disabled")
+    #     self.stop_button.configure(state="disabled")
+    #     self.check_alarm()
+
+    # def stop_alarm(self):
+    #     print("Alarm stopped.")
+    #     self.alarm_active = False
+    #     self.snooze_button.configure(state="disabled")
+    #     self.stop_button.configure(state="disabled")
+    #     self.on_finish_callback()
 
 
 if __name__ == "__main__":
