@@ -500,6 +500,42 @@ class MultiUtilityApp:
         self.num_div = CTkButton(self.calculator_fram, width=60, height=60,font=self.font_18, text="/", text_color="black", fg_color="#74cec6", command=lambda: valu_input("/"))
         self.num_div.grid(row=2, column=4, padx=5, pady=5)
 
+        # Digit bindings
+        for digit in "0123456789":
+            self.input_box.bind(digit, lambda event, d=digit: valu_input(d))
+
+        # Decimal point
+        self.input_box.bind(".", lambda event: valu_input("."))
+
+        # Operators
+        self.input_box.bind("+", lambda event: valu_input("+"))
+        self.input_box.bind("-", lambda event: valu_input("-"))
+        self.input_box.bind("*", lambda event: valu_input("*"))
+        self.input_box.bind("/", lambda event: valu_input("/"))
+        self.input_box.bind("%", lambda event: (valu_input("%"), percentage()))
+
+        # Brackets
+        self.input_box.bind("(", lambda event: valu_input("("))
+        self.input_box.bind(")", lambda event: valu_input(")"))
+
+        # Clear (C or c)
+        self.input_box.bind("c", lambda event: clear())
+        self.input_box.bind("C", lambda event: clear())
+
+        # Backspace
+        self.input_box.bind("<BackSpace>", lambda event: backspace())
+
+        # Square (x or X)
+        self.input_box.bind("x", lambda event: square())
+        self.input_box.bind("X", lambda event: square())
+
+        # Square root (r or R for √)
+        self.input_box.bind("r", lambda event: square_root())
+        self.input_box.bind("R", lambda event: square_root())
+
+        # Enter key or = for equals
+        self.input_box.bind("<Return>", lambda event: calculation())
+        self.input_box.bind("=", lambda event: calculation())
 
         # calculator end
 
@@ -584,6 +620,8 @@ class MultiUtilityApp:
                             placeholder_text="Enter Amount",
                             justify='center')
         self.from_lable.place(x=45,y=200)
+        self.from_lable.bind("=", lambda event: convertcurrency())
+        self.from_lable.bind("<Return>", lambda event: convertcurrency())
 
         self.to_lable=CTkEntry(self.windo, state="readonly",
                           justify="center",
@@ -708,6 +746,8 @@ class MultiUtilityApp:
 
         self.U_from_input_box = CTkEntry(self.converter_frame_middle1, justify="center", width=100, font=self.font_14, fg_color="transparent", placeholder_text="Input")
         self.U_from_input_box.place(x=27, y=220.)
+        self.U_from_input_box.bind("=", lambda event: unit_convart())
+        self.U_from_input_box.bind("<Return>", lambda event: unit_convart())
 
         self.U_to_output_box = CTkEntry(self.converter_frame_middle1, justify="center", width=100, fg_color="transparent", state="readonly", font=self.font_14)
         self.U_to_output_box.place(x=180, y=220)
@@ -743,6 +783,6 @@ class MultiUtilityApp:
 
 if __name__ == "__main__":
     main_cal_windo = CTk()
-    #main_cal_windo.geometry("500x600")
+    main_cal_windo.geometry("500x600")
     app = MultiUtilityApp(main_cal_windo)
-    # main_cal_windo.mainloop()
+    main_cal_windo.mainloop()

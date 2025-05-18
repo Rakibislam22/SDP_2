@@ -3,7 +3,7 @@ import time
 from datetime import datetime, timedelta
 from CTkScrollableDropdown import CTkScrollableDropdown
 from pathlib import Path
-from playsound import playsound
+# from playsound import playsound
 from alif_calculator import MultiUtilityApp
 from music import MusicPlayer
 from PIL import Image
@@ -477,7 +477,7 @@ class AlarmPage(customtkinter.CTkFrame):
     def trigger_alarm(self):
         if self.selected_sound:
             print("Playing alarm sound...")
-            threading.Thread(target=playsound, args=(self.selected_sound,), daemon=True).start()
+            # threading.Thread(target=playsound, args=(self.selected_sound,), daemon=True).start()
         else:
             print("No sound selected.")
 
