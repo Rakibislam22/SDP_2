@@ -3,6 +3,7 @@ import tkinter.filedialog as fd
 import pygame
 from pathlib import Path
 from PIL import Image
+import webbrowser
 from customtkinter import CTkImage
 from mutagen.mp3 import MP3
 import os
@@ -21,7 +22,7 @@ class MusicPlayer:
             light_image=Image.open(img).resize((300, 300), Image.Resampling.LANCZOS),
             dark_image=Image.open(img).resize((300, 300), Image.Resampling.LANCZOS),
             size=(300, 300))
-        self.main_frame = ctk.CTkFrame(self.root, width=400, height=500)
+        self.main_frame = ctk.CTkFrame(self.root, width=420, height=560)
         self.main_frame.pack()
         self.main_frame.pack_propagate(False)
 
@@ -112,8 +113,18 @@ class MusicPlayer:
         tool_frame.grid_columnconfigure((0, 1, 3, 4), weight=0)
         tool_frame.grid_columnconfigure(2, weight=1)
 
-        self.name_right = ctk.CTkLabel(self.main_frame, text="©Ismail hossain   ", font=("Arial", 10, "bold"))
-        self.name_right.place(relx = 1.0, rely = 1.0, anchor ='se')
+        def open_ismail_github(event=None):
+            webbrowser.open_new("https://github.com/kenshiro147")  
+
+        self.name_right = ctk.CTkLabel(
+            self.main_frame,
+            text="©Ismail Hossain   ",
+            font=("Arial", 10, "bold"),
+            cursor="hand2",  # Hand cursor on hover
+            text_color="#9e9e9e"  # Optional for style consistency
+        )
+        self.name_right.place(relx=1.0, rely=1.0, anchor='se')
+        self.name_right.bind("<Button-1>", open_ismail_github)
 
 
     def format_time(self, seconds):

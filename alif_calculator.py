@@ -7,6 +7,7 @@ from PIL import Image
 from pathlib import Path
 from CTkScrollableDropdown import CTkScrollableDropdown
 from unitconverter import converter
+import webbrowser
 
 
 class MultiUtilityApp:
@@ -665,9 +666,24 @@ class MultiUtilityApp:
         self.copyright_frame = CTkFrame(self.currency_converter_frame, height=8, border_width=0,bg_color="#333333", fg_color="#333333")
         self.copyright_frame.pack(fill="x",side="top")
 
-        copyrights = CTkLabel(self.main_tab, text="© alifjobaer12", font=("Calibri", 11), corner_radius=0, width=1, height=1, fg_color="transparent", bg_color="transparent", text_color="#9e9e9e" )
-        copyrights.place(x=450, y=565, anchor="e")
+        def open_alif_github(event=None):
+            webbrowser.open_new("https://github.com/alifjobaer12")
 
+        # Copyright label (Alif)
+        copyrights = CTkLabel(
+            self.main_tab,
+            text="© alifjobaer12",
+            font=("Calibri", 11),
+            corner_radius=0,
+            width=1,
+            height=1,
+            fg_color="transparent",
+            bg_color="transparent",
+            text_color="#9e9e9e",
+            cursor="hand2"
+        )
+        copyrights.place(x=450, y=565, anchor="e")
+        copyrights.bind("<Button-1>", open_alif_github)
         # copyright watermark end
 
 
