@@ -783,6 +783,6 @@ class MultiUtilityApp:
 
 if __name__ == "__main__":
     main_cal_windo = CTk()
-    main_cal_windo.geometry("500x600")
+    # main_cal_windo.geometry("500x600")
     app = MultiUtilityApp(main_cal_windo)
-    main_cal_windo.mainloop()
+    # main_cal_windo.mainloop()
