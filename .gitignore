@@ -6,3 +6,4 @@ required_packages.py
 updatetab.py
 tab.py
 alif_math.pysound/video_sample.mp4
+__pycache__/
