@@ -412,7 +412,8 @@ class App(customtkinter.CTk):
 
         self.alarm_hours_label = customtkinter.CTkLabel(self.alarm_page, text="Hours", font=customtkinter.CTkFont("Arial", 18))
         self.minute_label = customtkinter.CTkLabel(self.alarm_page, text="Minutes", font=customtkinter.CTkFont("Arial", 18))
-        self.activate_switch = customtkinter.CTkSwitch(self.alarm_page, text="Activate", command=self.set_alarm,width=4)
+        self.A_switch_var = customtkinter.StringVar(value="off")
+        self.activate_switch = customtkinter.CTkSwitch(self.alarm_page, text="Activate", command=self.set_alarm,width=4, variable=self.A_switch_var, onvalue="on", offvalue="off")
         self.choose_sound_button = customtkinter.CTkButton(
             self.alarm_page,
             text="Choose Sound",
@@ -426,7 +427,7 @@ class App(customtkinter.CTk):
         #self.scrollable_frame1.grid(row=1, column=0, padx=5,pady=10)
 
         hour= [f"{i:02}" for i in range(1, 13)]
-        hour24= [f"{i:02}" for i in range(1, 25)]
+        hour24= [f"{i:02}" for i in range(0, 24)]
         minute = [f"{i:02}" for i in range(60)]
 
         self.hour_cb = customtkinter.CTkComboBox(self.alarm_page, values=hour,justify='center',state="readonly")
@@ -871,37 +872,52 @@ class App(customtkinter.CTk):
             self.hour_cb.grid(row=1, column=1, padx=5, pady=2)
             self.minute_cb.grid(row=1, column=2, padx=5, pady=2)
             self.period_cb.grid(row=1, column=3, padx=5, pady=2)
-            self.alarm_hours_label.grid(row=0, column=0, columnspan=1, pady=0)
-            self.minute_label.grid(row=0, column=1, columnspan=1, pady=0)
-            self.activate_switch.grid(row=3, column=1, padx=20, pady=20)
-            self.choose_sound_button.grid(row=2, column=1, pady=20)
+            self.alarm_hours_label.grid(row=0, column=1, columnspan=1, pady=0)
+            self.minute_label.grid(row=0, column=2, columnspan=1, pady=0)
+            self.activate_switch.grid(row=3, column=2, padx=20, pady=20)
+            self.choose_sound_button.grid(row=2, column=2, pady=20)
 
 
     def set_alarm(self):
-        try:
-            minute = int(self.minute_cb.get())
+        if self.A_switch_var.get() == "on":
+            self.hour_cb.configure(state="disabled")
+            self.hour_24.configure(state="disabled")
+            self.minute_cb.configure(state="disabled")
+            self.period_cb.configure(state="disabled")
+            self.choose_sound_button.configure(state="disabled")
 
-            if self.switch_var.get() == "on":  # 24-hour mode
-                hour = int(self.hour_24.get())
-                print("24-hour mode selected")
-            else:  # 12-hour mode
-                hour = int(self.hour_cb.get())
-                period = self.period_cb.get()
-                print("12-hour mode selected")
-                if period == "PM" and hour != 12:
-                    hour += 12
-                elif period == "AM" and hour == 12:
-                    hour = 0
+            try:
+                minute = int(self.minute_cb.get())
 
-        except Exception as e:
-            print("Error reading time inputs:", e)
-            return
+                if self.switch_var.get() == "on":  # 24-hour mode
+                    hour = int(self.hour_24.get())
+                    print("24-hour mode selected")
+                else:  # 12-hour mode
+                    hour = int(self.hour_cb.get())
+                    period = self.period_cb.get()
+                    print("12-hour mode selected")
+                    if period == "PM" and hour != 12:
+                        hour += 12
+                    elif period == "AM" and hour == 12:
+                        hour = 0
 
-        self.alarm_time = datetime.now().replace(hour=hour, minute=minute, second=0, microsecond=0).time()
-        print(f"Alarm set for: {self.alarm_time.strftime('%H:%M:%S')}")
+            except Exception as e:
+                print("Error reading time inputs:", e)
+                return
 
-        self.alarm_active = True
-        self.check_alarm()
+            self.alarm_time = datetime.now().replace(hour=hour, minute=minute, second=0, microsecond=0).time()
+            print(f"Alarm set for: {self.alarm_time.strftime('%H:%M:%S')}")
+
+            self.alarm_active = True
+            self.check_alarm()
+        else:
+            self.hour_cb.configure(state="readonly")
+            self.hour_24.configure(state="readonly")
+            self.minute_cb.configure(state="readonly")
+            self.period_cb.configure(state="readonly")
+            self.choose_sound_button.configure(state="active")
+            self.alarm_active = False
+            print("Alarm Deactivate")
 
 
 
@@ -941,8 +957,14 @@ class App(customtkinter.CTk):
 
     def stop_alarm(self):
         print("Alarm stopped.")
+        self.hour_cb.configure(state="readonly")
+        self.hour_24.configure(state="readonly")
+        self.minute_cb.configure(state="readonly")
+        self.period_cb.configure(state="readonly")
+        self.choose_sound_button.configure(state="active")
         self.alarm_active = False
         pygame.mixer.music.stop()
+        self.A_switch_var.set("off")
         if hasattr(self, 'alarm_popup') and self.alarm_popup:
             self.alarm_popup.destroy()
             self.alarm_popup = None
@@ -950,10 +972,15 @@ class App(customtkinter.CTk):
 
     def snooze_alarm(self):
         print("Alarm snoozed for 5 minutes.")
-        self.stop_alarm()
+        pygame.mixer.music.stop()
         new_alarm_time = (datetime.combine(datetime.today(), self.alarm_time) + timedelta(minutes=5)).time()
         self.alarm_time = new_alarm_time
         self.alarm_active = True
+        
+        if hasattr(self, 'alarm_popup') and self.alarm_popup:
+            self.alarm_popup.destroy()
+            self.alarm_popup = None
+
         self.check_alarm()
 
 
@@ -964,6 +991,12 @@ class App(customtkinter.CTk):
         self.alarm_popup.geometry("300x150")
         self.alarm_popup.grab_set()
         self.alarm_popup.attributes("-topmost", True)
+
+        # 🚫 Disable close (X) button
+        self.alarm_popup.protocol("WM_DELETE_WINDOW", lambda: None)
+
+        # 🚫 Disable resizing
+        self.alarm_popup.resizable(False, False)
 
         # --- Center the popup relative to main window ---
         self.update_idletasks()

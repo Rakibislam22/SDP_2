@@ -384,7 +384,7 @@ class VideoPlayerApp:
                 return
 
             # If the removed video was currently playing
-            if pathlib.Path(removed_path).resolve() == pathlib.Path(current_path).resolve():
+            if  self.media_player.is_playing():
                 self.media_player.stop()
                 self.movie_title.configure(text="Video Title")
                 self.video_panel.configure(image=None)
@@ -412,5 +412,12 @@ class VideoPlayerApp:
     def clear_playlist(self):
         open("playlist.txt", "w", encoding="utf-8").close()
         self.selected_index = None
+        if self.media_player.is_playing():
+            self.media_player.stop()
+            self.movie_title.configure(text="Video Title")
+            self.video_panel.configure(image=None)
+            self.seek_slider.set(0)
+            self.current_time_label.configure(text="0:00")
+            self.total_time_label.configure(text="0:00")
         self.refresh_playlist_buttons()
 
