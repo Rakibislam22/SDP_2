@@ -29,7 +29,7 @@ class TimezoneConverter(ctk.CTkFrame):
         try:
             timezone = pytz.timezone(timezone_str)
             time_now = datetime.now(timezone)
-            return time_now.strftime("%a, %d %B %Y , %I:%M   %p")
+            return time_now.strftime("%a, %d %B %Y , %H:%M ")
         except Exception as e:
             return f"Invalid Timezone: {timezone_str}"
 
