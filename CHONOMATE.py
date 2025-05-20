@@ -324,24 +324,43 @@ class App(customtkinter.CTk):
               
         )
         
+        # side panel frame
         self.side_panel.place(x=self.winfo_width(), y=205)
         self.side_panel.lift()
     
+        # side wegit
+
+        Weather_img_path = Path(__file__).resolve().parent / "image" / "wea.png"
+        self.Weather_img = customtkinter.CTkImage(light_image=Image.open(Weather_img_path), size=(55, 60))
 
 
-        img_path = Path(__file__).resolve().parent / "image" / "cal.png"
-        self.cal_img = customtkinter.CTkImage(light_image=Image.open(img_path), size=(60, 60))
+        cal_img_path = Path(__file__).resolve().parent / "image" / "cal.png"
+        self.cal_img = customtkinter.CTkImage(light_image=Image.open(cal_img_path), size=(55, 55))
 
-        img_path2 = Path(__file__).resolve().parent / "image" / "music.png"
-        self.music_img = customtkinter.CTkImage(light_image=Image.open(img_path2), size=(60, 60))
+        music_img_path = Path(__file__).resolve().parent / "image" / "music.png"
+        self.music_img = customtkinter.CTkImage(light_image=Image.open(music_img_path), size=(55, 55))
 
-        img_path3 = Path(__file__).resolve().parent / "image" / "video.png"
-        self.video_img = customtkinter.CTkImage(light_image=Image.open(img_path3), size=(60, 60))
+        video_img_path = Path(__file__).resolve().parent / "image" / "video.png"
+        self.video_img = customtkinter.CTkImage(light_image=Image.open(video_img_path), size=(55, 55))
 
         
+        # Button to launch lonch_Weather_btn function
+        self.weather_button = customtkinter.CTkButton(
+        self.side_panel,
+        image=self.Weather_img,
+        text="",
+        
+        width=30,
+        height=30,
+        fg_color="transparent",
+        hover_color="#888fba"
+        )
+        self.weather_button.pack(padx=5,pady=5)
+
+
 
         # Button to launch lonch_cal_btn function
-        self.image_button = customtkinter.CTkButton(
+        self.cal_button = customtkinter.CTkButton(
         self.side_panel,
         image=self.cal_img,
         text="",
@@ -351,10 +370,10 @@ class App(customtkinter.CTk):
         fg_color="transparent",
         hover_color="#888fba"
         )
-        self.image_button.pack(padx=5,pady=5)
+        self.cal_button.pack(padx=5,pady=5)
 
         # Button to launch lonch_music_btn function
-        self.image_button2 = customtkinter.CTkButton(
+        self.music_button = customtkinter.CTkButton(
         self.side_panel,
         image=self.music_img,
         text="",
@@ -364,11 +383,11 @@ class App(customtkinter.CTk):
         fg_color="transparent",
         hover_color="#888fba"
         )
-        self.image_button2.pack(padx=5,pady=5)
+        self.music_button.pack(padx=5,pady=5)
 
 
         # Button to launch lonch_video_btn function
-        self.image_button2 = customtkinter.CTkButton(
+        self.video_button = customtkinter.CTkButton(
         self.side_panel,
         image=self.video_img,
         text="",
@@ -378,7 +397,7 @@ class App(customtkinter.CTk):
         fg_color="transparent",
         hover_color="#888fba"
         )
-        self.image_button2.pack(padx=5,pady=5)
+        self.video_button.pack(padx=5,pady=5)
 
 
         self.side_panel_open = False
@@ -552,12 +571,12 @@ class App(customtkinter.CTk):
         self.humidity_var = customtkinter.StringVar(value="Humidity: --%")
 
     def prepare_tabs(self):
-            self.tab_n = ["Alarm", "World Clock", "Weather", "Stopwatch", "Timer"]
+            self.tab_n = ["Alarm", "World Clock", "Stopwatch", "Timer"]
 
     # Load images
     def load_images(self):
         self.drive = Path(__file__).resolve().parent
-        img_paths = ["alarm.png", "wc.png", "wea.png", "stop.png", "timer.png"]
+        img_paths = ["alarm.png", "wc.png", "stop.png", "timer.png"]
         self.icons = [
             customtkinter.CTkImage(light_image=Image.open(self.drive / "image" / path), size=(40, 40))
             for path in img_paths
@@ -580,7 +599,7 @@ class App(customtkinter.CTk):
                     
                 )
                 self.chatbot_f.pack_propagate(False)
-                self.chatbot_f.place(x=295, y=425, anchor="center")
+                self.chatbot_f.place(x=395, y=505, anchor="center")
 
                 chatbot_t = customtkinter.CTkLabel(self.chatbot_f,text=" ChronoAI ", font=customtkinter.CTkFont("Courier New",18, weight="bold"))
                 chatbot_t.place(x=190,y=1)
@@ -600,7 +619,7 @@ class App(customtkinter.CTk):
                 self.chatbot_initialized = True
             else:
                 # Chatbot frame exists but hidden, show it again
-                self.chatbot_f.place(x=295, y=425, anchor="center")
+                self.chatbot_f.place(x=395, y=505, anchor="center")
 
             self.bind("<Button-1>", self.check_click_outside)
             self.bind("<Escape>", self.check_click_outside)
