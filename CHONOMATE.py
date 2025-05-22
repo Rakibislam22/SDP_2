@@ -11,6 +11,7 @@ from music import MusicPlayer
 from video_player import VideoPlayerApp
 from WorldC_Clock import TimezoneConverter
 from sound_popup import SoundPopup
+from timer import TimerTab
 from PIL import Image, ImageTk, ImageSequence
 from io import BytesIO
 import threading
@@ -409,9 +410,20 @@ class App(customtkinter.CTk):
         for tab in self.tab_n:
             self.tabview1.add(tab)
 
+        self.tabview1.set("Alarm")  # Default active
+        
+        #Timer tab 
+        timer_tab = self.tabview1.tab("Timer")
+        
+        #Timer Frame
+        #timer= customtkinter.CTkFrame(timer_tab,fg_color="transparent")
+        #timer.place(x=200,y=60)
+        timer_widget = TimerTab(timer_tab)
+        timer_widget.place(x=200, y=60)
+
         
 
-        self.tabview1.set("Alarm")  # Default active
+        
 
         # Setup AlarmPage (repeat for other pages similarly)
         alarm_tab = self.tabview1.tab("Alarm")
@@ -419,7 +431,8 @@ class App(customtkinter.CTk):
         alarm_tab.grid_rowconfigure(2, weight=1)
         alarm_tab.grid_columnconfigure(0, weight=1)
         alarm_tab.grid_columnconfigure(2, weight=1)
-        # Pass switch_var when creating AlarmPage
+        
+        # AlarmPage frame
         self.alarm_page = customtkinter.CTkFrame(alarm_tab,fg_color="transparent")
         self.alarm_page.place(x=200,y=60)
 
@@ -511,12 +524,9 @@ class App(customtkinter.CTk):
 
         
         wc_tab = self.tabview1.tab("World Clock")
-        wc_tab.grid_rowconfigure(0, weight=1)
-        wc_tab.grid_rowconfigure(2, weight=1)
-        wc_tab.grid_columnconfigure(0, weight=1)
-        wc_tab.grid_columnconfigure(2, weight=1)
-        self.timezone_converter = TimezoneConverter(master=wc_tab)
-        self.timezone_converter.grid(row=0, column=1)
+
+        timezone_converter = TimezoneConverter(wc_tab)
+        timezone_converter.place(x=300, y=40)
 
         # Access tab buttons
         self.tab_buttons = self.tabview1._segmented_button._buttons_dict

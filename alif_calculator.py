@@ -102,6 +102,7 @@ class MultiUtilityApp:
             self.input_num += str(val)
             self.input_box.delete(1.0,"end")
             self.input_box.insert(1.0,self.input_num)
+            self.input_box.see("end")
             self.input_box.configure(state="disabled")
 
 
@@ -502,6 +503,43 @@ class MultiUtilityApp:
         self.num_div.grid(row=2, column=4, padx=5, pady=5)
 
 
+        # ===== KEYBOARD BINDINGS =====
+
+        # Digits and dot
+        for digit in "0123456789":
+            self.input_box.bind(digit, lambda event, d=digit: valu_input(d))
+        self.input_box.bind(".", lambda event: valu_input("."))
+
+        # Operators
+        self.input_box.bind("+", lambda event: valu_input("+"))
+        self.input_box.bind("-", lambda event: valu_input("-"))
+        self.input_box.bind("*", lambda event: valu_input("*"))
+        self.input_box.bind("/", lambda event: valu_input("/"))
+        self.input_box.bind("%", lambda event: (valu_input("%"), percentage()))
+
+        # Brackets
+        self.input_box.bind("(", lambda event: valu_input("("))
+        self.input_box.bind(")", lambda event: valu_input(")"))
+
+        # Clear (C or c)
+        self.input_box.bind("c", lambda event: clear())
+        self.input_box.bind("C", lambda event: clear())
+
+        # Backspace
+        self.input_box.bind("<BackSpace>", lambda event: backspace())
+
+        # Square (x or X)
+        self.input_box.bind("x", lambda event: square())
+        self.input_box.bind("X", lambda event: square())
+
+        # Square root (r or R for √)
+        self.input_box.bind("r", lambda event: square_root())
+        self.input_box.bind("R", lambda event: square_root())
+
+        # Enter or = for equals
+        self.input_box.bind("<Return>", lambda event: calculation())
+        self.input_box.bind("=", lambda event: calculation())
+        
         # calculator end
 
 
@@ -585,6 +623,7 @@ class MultiUtilityApp:
                             placeholder_text="Enter Amount",
                             justify='center')
         self.from_lable.place(x=45,y=200)
+        self.from_lable.bind("<Return>", lambda event: convertcurrency())
 
         self.to_lable=CTkEntry(self.windo, state="readonly",
                           justify="center",
@@ -724,6 +763,7 @@ class MultiUtilityApp:
 
         self.U_from_input_box = CTkEntry(self.converter_frame_middle1, justify="center", width=100, font=self.font_14, fg_color="transparent", placeholder_text="Input")
         self.U_from_input_box.place(x=27, y=220.)
+        self.U_from_input_box.bind("<Return>", lambda event: unit_convart())
 
         self.U_to_output_box = CTkEntry(self.converter_frame_middle1, justify="center", width=100, fg_color="transparent", state="readonly", font=self.font_14)
         self.U_to_output_box.place(x=180, y=220)
