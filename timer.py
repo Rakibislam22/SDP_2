@@ -3,6 +3,7 @@ import threading
 import time
 import pygame
 import math
+from pathlib import Path
 
 class TimerTab(ctk.CTkFrame):
     def __init__(self, master):
@@ -13,10 +14,11 @@ class TimerTab(ctk.CTkFrame):
         self.time_left = 0
         self.total_time = 0
         self.timer_thread = None
+        self.sound_playing = False
 
         # Sound init
         pygame.mixer.init()
-        self.beep_file = "beep.wav"  # Replace with your .wav file path
+        self.beep_file = Path(__file__).resolve().parent / "sound" / "beep.mp3"
 
         # Input frame
         self.entry_frame = ctk.CTkFrame(self)
@@ -44,10 +46,8 @@ class TimerTab(ctk.CTkFrame):
         self.canvas = ctk.CTkCanvas(self, width=200, height=200, bg=bg_color, highlightthickness=0)
         self.canvas.pack(pady=10)
         self.arc = None
+        self.canvas_text = self.canvas.create_text(100, 100, text="00:00:00", fill="white", font=("Arial", 20, "bold"))
 
-        # Time Display
-        self.time_label = ctk.CTkLabel(self, text="00:00:00", font=("Arial", 36))
-        self.time_label.pack(pady=10)
 
         # Buttons
         self.button_frame = ctk.CTkFrame(self)
@@ -79,10 +79,12 @@ class TimerTab(ctk.CTkFrame):
                 self.time_left = hours * 3600 + minutes * 60 + seconds
                 self.total_time = self.time_left
                 if self.time_left <= 0:
-                    self.time_label.configure(text="Invalid Time")
+                    #self.time_label.configure(text="Invalid Time")
+                    self.canvas.itemconfigure(self.canvas_text, text="Invalid")
                     return
             except ValueError:
-                self.time_label.configure(text="Invalid Input")
+                #self.time_label.configure(text="Invalid Input")
+                self.canvas.itemconfigure(self.canvas_text, text="Invalid")
                 return
 
             self.running = True
@@ -91,23 +93,23 @@ class TimerTab(ctk.CTkFrame):
             self.timer_thread.start()
             self.update_progress()
 
-
-            
-
     def run_timer(self):
         while self.time_left > 0 and self.running:
             mins, secs = divmod(self.time_left, 60)
             hrs, mins = divmod(mins, 60)
             time_str = f"{hrs:02}:{mins:02}:{secs:02}"
-            self.time_label.configure(text=time_str)
+            #self.time_label.configure(text=time_str)
+            self.canvas.itemconfigure(self.canvas_text, text=time_str)
             time.sleep(1)
             self.time_left -= 1
 
         if self.time_left <= 0 and self.running:
             self.running = False
-            self.time_label.configure(text="Time's Up!")
+            #self.time_label.configure(text="Time's Up!")
+            self.canvas.itemconfigure(self.canvas_text, text="Time's Up!")
             self.update_buttons(start=True, pause=False, reset=True)
             self.play_beep()
+            self.show_popup()
 
     def update_progress(self):
         if not self.running:
@@ -128,8 +130,9 @@ class TimerTab(ctk.CTkFrame):
         self.running = False
         self.time_left = 0
         self.total_time = 0
-        self.time_label.configure(text="00:00:00")
+        #self.time_label.configure(text="00:00:00")
         self.canvas.delete("arc")
+        self.canvas.itemconfigure(self.canvas_text, text="00:00:00")
         self.update_buttons(start=True, pause=False, reset=False)
 
     def update_buttons(self, start, pause, reset):
@@ -139,6 +142,57 @@ class TimerTab(ctk.CTkFrame):
 
     def play_beep(self):
         try:
-            pygame.mixer.Sound(self.beep_file).play()
+            pygame.mixer.Sound(self.beep_file).play(-1)  # Looping
+            self.sound_playing = True
         except:
             print("Beep sound not found or failed to play.")
+
+    def stop_beep(self):
+        if self.sound_playing:
+            pygame.mixer.stop()
+            self.sound_playing = False
+
+    def show_popup(self):
+        popup = ctk.CTkToplevel(self)
+        popup.title("Timer Alert")
+        popup.geometry("300x180")
+        popup.grab_set()  # Makes it modal
+        popup.attributes("-topmost", True)
+        popup.resizable(False, False)
+        popup.protocol("WM_DELETE_WINDOW", lambda: None)  # Disable close button
+
+        # Center the popup
+        self.update_idletasks()
+        main_x = self.winfo_rootx()
+        main_y = self.winfo_rooty()
+        main_width = self.winfo_width()
+        main_height = self.winfo_height()
+        popup_width, popup_height = 300, 150
+        pos_x = main_x + (main_width // 2) - (popup_width // 2)
+        pos_y = main_y + (main_height // 2) - (popup_height // 2)
+        popup.geometry(f"{popup_width}x{popup_height}+{pos_x}+{pos_y}")
+
+        #Time's Up
+
+        time_ = ctk.CTkLabel(popup, text="⏰ Time's up! ", font=("Arial",22, "bold"))
+        time_.pack()
+
+        # Label to show overtime
+        time_label = ctk.CTkLabel(popup, text="⏰  -00:00", font=("Arial", 20))
+        time_label.pack(pady=10)
+
+        # Track overtime in seconds
+        self.overtime_seconds = 0
+
+        def update_overtime():
+            if self.sound_playing:
+                mins, secs = divmod(self.overtime_seconds, 60)
+                time_str = f"{mins:02}:{secs:02}"
+                time_label.configure(text=f"-{time_str}")
+                self.overtime_seconds += 1
+                popup.after(1000, update_overtime)
+
+        update_overtime()
+
+        # Stop sound and close popup
+        ctk.CTkButton(popup, text="Stop Sound", command=lambda: [self.stop_beep(), popup.destroy()]).pack(pady=10)
