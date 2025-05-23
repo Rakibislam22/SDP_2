@@ -5,6 +5,7 @@ import webbrowser
 import time
 import os
 from dotenv import load_dotenv
+import re
 load_dotenv()
 
 
@@ -59,12 +60,25 @@ def open_chatbot(chatbot_main_windo):
     def chatbot_response(sms):
         try:
             response = conversation.send_message(sms)
-            r=f"ChronoAI: {response.text} "
+            cleaned_text = clean_response_text(response.text)
+            r=f"ChronoAI: {cleaned_text} "
         except Exception as e:
             r = f"Error: {str(e)}. Please try again."
         see_message(r+"\n\n")
 
 
+    def clean_response_text(text):
+        # Replace Gemini with ChronoAi
+        text = re.sub(r'\bgemini\b', 'ChronoAi', text, flags=re.IGNORECASE)
+      
+        # Replace Google and Google AI with Team_ChronoMate
+        text = re.sub(r'\bgoogle ai\b', 'ChronoAi', text, flags=re.IGNORECASE)
+        text = re.sub(r'\bgoogle\b', 'Team_ChronoMate', text, flags=re.IGNORECASE)
+    
+        # Add signature
+        text = text.strip() + "\n\n\t\t\t\tPowered by Team_ChronoMate"
+        return text
+    
     #Frame for Chatbot
     chatbot_frame = CTkFrame(chatbot_main_windo, fg_color="light blue", width=400, height=500 )
     chatbot_frame.pack(side="top", expand=True, fill="both",)
