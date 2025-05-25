@@ -24,6 +24,7 @@ class MultiUtilityApp:
             set_appearance_mode("light")
             self.calculator_fram.configure(fg_color="white")
             self.input_box.configure(fg_color="white", text_color="black")
+            self.history_frame.configure(fg_color="white")
 
             self.windo.configure(fg_color="white")
             self.to_lable.configure(fg_color="white")
@@ -43,6 +44,7 @@ class MultiUtilityApp:
             set_appearance_mode("dark")
             self.calculator_fram.configure(fg_color="black")
             self.input_box.configure(fg_color="black", text_color="white")
+            self.history_frame.configure(fg_color="black")
 
             self.windo.configure(fg_color="black")
             self.to_lable.configure(fg_color="#3A3B3C")
@@ -61,6 +63,7 @@ class MultiUtilityApp:
 
     def open_calculator(self):
         self.c=CurrencyConverter()
+        self.history_buttons = []  # Store references to history buttons
 
         self.font_12 = ("Helvetica",12,"bold")
         self.font_16 = ("Helvetica",16,"bold")
@@ -109,12 +112,15 @@ class MultiUtilityApp:
         def calculation():
             self.input_num
             try:
+                exp = self.input_num
                 self.input_num = str(eval(self.input_num))
+                re = self.input_num
                 self.input_box.configure(state="normal")
                 self.input_box.delete(1.0,"end")
                 self.input_box.insert(1.0,self.input_num)
                 self.input_box.configure(state="disabled")
-            except:
+                save_history(exp, re)
+            except Exception as e:
                 clear()
                 self.input_box.configure(state="normal")
                 self.input_box.insert(1.0,"Error")
@@ -154,12 +160,15 @@ class MultiUtilityApp:
         def square():
             self.input_num
             try:
+                exp = f"{self.input_num} ²"
                 result = float(self.input_num) ** 2
                 self.input_num = str(result)
+                re = self.input_num
                 self.input_box.configure(state="normal")
                 self.input_box.delete(1.0, "end")
                 self.input_box.insert(1.0, self.input_num)
                 self.input_box.configure(state="disabled")
+                save_history(exp, re)
             except:
                 clear()
                 self.input_box.configure(state="normal")
@@ -170,12 +179,15 @@ class MultiUtilityApp:
         def square_root():
             self.input_num
             try:
+                exp = f"√ {self.input_num}"
                 result = math.sqrt(float(self.input_num))
                 self.input_num = str(result)
+                re = self.input_num
                 self.input_box.configure(state="normal")
                 self.input_box.delete(1.0, "end")
                 self.input_box.insert(1.0, self.input_num)
                 self.input_box.configure(state="disabled")
+                save_history(exp, re)
             except:
                 clear()
                 self.input_box.configure(state="normal")
@@ -192,7 +204,42 @@ class MultiUtilityApp:
                 self.input_box.insert(1.0, self.input_num)  
                 self.input_box.configure(state="disabled")
 
+        def history(self, s):
+            if hasattr(self, 'his') and self.his.winfo_ismapped():
+                self.his.pack_forget()
+            else:
+                if not hasattr(self, 'his'):
+                    self.his = CTkFrame(self.reposition_calculater_frame, width=300)
 
+                    self.history_frame = CTkScrollableFrame(self.his, fg_color="transparent")
+                    self.history_frame.pack(expand=True, fill="both", side="right")
+                    self.history_frame._parent_canvas.yview_moveto(1.0)
+                    titel = CTkLabel(self.history_frame, height=1, width=1, text="History", font=self.font_18, fg_color="transparent")
+                    titel.pack(pady=(0,30))
+                    line = CTkFrame(self.his, width=5, fg_color="transparent")
+                    line.pack(expand=True, fill="y", side="left")
+
+                if s:
+                    self.his.pack(side="right", expand=True, fill="y")
+                    self.history_frame._parent_canvas.yview_moveto(1.0)
+
+        def save_history(expression, result):
+            if hasattr(self, "history_frame"):
+                self.hist_btn = CTkButton(self.history_frame, text=expression, width=300, hover=False, fg_color="transparent", text_color="#6C5CE7", font=self.font_16, anchor="w", command=lambda: use_history(expression))
+                self.hist_btn.pack(fill="x", pady=2)
+
+                self.ans_btn = CTkButton(self.history_frame, text="= " + result, width=300, hover=False, fg_color="transparent", text_color="#2AA198", font=self.font_16, anchor="w", command=lambda: use_history(result))
+                self.ans_btn.pack(fill="x", pady=2)
+
+                his_l = CTkLabel(self.history_frame, text="", width=300, fg_color="transparent", anchor="w")
+                his_l.pack(fill="x", pady=2)
+
+        def use_history(expression):
+            self.input_num += expression
+            self.input_box.configure(state="normal")
+            self.input_box.delete(1.0, "end")
+            self.input_box.insert(END, self.input_num)
+            self.input_box.configure(state="disabled")
 
         #   calculator functions end
 
@@ -444,11 +491,14 @@ class MultiUtilityApp:
 
 
         self.calculator_fram = CTkFrame(self.reposition_calculater_frame, fg_color="black")
-        self.calculator_fram.pack(side="top", expand=True, fill="both")
+        self.calculator_fram.pack(side="left", expand=True, fill="both")
 
         self.input_box = CTkTextbox(self.calculator_fram, wrap="none", activate_scrollbars=True, height=70,width=300, state="disabled", fg_color="black",font=self.font_38, text_color="white")
         self.input_box.grid(columnspan=5, pady=10,padx=10)
 
+        history(self, 0)
+        self.history_btn = CTkButton(self.calculator_fram, text="🕒", text_color="gray", font=("arial", 22, "bold"), height=1, width=1, fg_color="transparent", bg_color="transparent", hover=False, command=lambda: history(self, 1))
+        self.history_btn.grid(row=0, column=4, padx=(15,0), pady=(55,0))
 
         self.num_c = CTkButton(self.calculator_fram, width=60, height=60 ,font=self.font_16, text="C", command=clear, fg_color="#74cec6", text_color="red" )
         self.num_c.grid(row=1, column=1, padx=5, pady=5)
