@@ -99,6 +99,8 @@ class App(customtkinter.CTk):
         self.geometry("1060x870")
         self.show_welcome()
 
+        self.after(200,self.start_preloading)
+
         self.sound = None
         self.chatbot_initialized = False
         
@@ -127,13 +129,14 @@ class App(customtkinter.CTk):
     def show_welcome(self):
         self.welcome = WelcomePage(self, self.start_main_app)
         self.welcome.pack(fill="both", expand=True)
-        self.start_preloading()
+        
 
     def start_main_app(self):
         self.welcome.destroy()
         self.load_main_ui()
-        self.update_time()
-        self.load_weather_data()
+        
+        
+        
 
     #def show_welcome(self):
     #    self.welcome_frame = WelcomePage(self, self.load_main_ui)
@@ -204,24 +207,6 @@ class App(customtkinter.CTk):
         self.switch = customtkinter.CTkSwitch(self.sidebar_frame, text="24 Hours", font=customtkinter.CTkFont(size=15, weight="bold"), command=self.update_time, variable=self.switch_var, onvalue="on", offvalue="off")
         self.switch.grid(row=3, column=0, padx=20, pady=10)
 
-        self.drive = Path(__file__).resolve().parent
-        gif_path = self.drive / "image" / "Chrono.gif"
-        self.chrono = Image.open(gif_path)
-
-        self.frames = [ImageTk.PhotoImage(f.convert("RGBA")) for f in ImageSequence.Iterator(self.chrono)]
-        self.frame_index = 0
-
-        self.chrono_labale = customtkinter.CTkLabel(self.sidebar_frame,text="")
-        self.chrono_labale.place(x=65, y=725)
-        chronobot_btn = customtkinter.CTkButton(
-            self.sidebar_frame,
-            text="ChronoAI",
-            font=customtkinter.CTkFont("Courier New",16, weight="bold"),
-            width=3,
-            command= self.show_Ai
-        )
-        chronobot_btn.place(x=42, y=775)
-
         self.top_bar_frame = customtkinter.CTkFrame(self)
         self.top_bar_frame.grid(row=0, column=1, columnspan=2, padx=5, sticky="news")
 
@@ -236,7 +221,6 @@ class App(customtkinter.CTk):
 
         self.le = customtkinter.CTkLabel(self.clock_frame,text=".",text_color="#3e3f40")
         self.le.pack()
-
 
         self.time_label = customtkinter.CTkLabel(
             self.top_bar_frame,
@@ -255,10 +239,29 @@ class App(customtkinter.CTk):
         self.date_label = customtkinter.CTkLabel(self.top_bar_frame, font=customtkinter.CTkFont("Helvetica", 32, "bold"), text="Loading...")
         self.date_label.place(x=265, y=110)
 
-        
+        self.update_time()
+
+
+        self.drive = Path(__file__).resolve().parent
+        gif_path = self.drive / "image" / "Chrono.gif"
+        self.chrono = Image.open(gif_path)
+
+        self.frames = [ImageTk.PhotoImage(f.convert("RGBA")) for f in ImageSequence.Iterator(self.chrono)]
+        self.frame_index = 0
+
+        self.chrono_labale = customtkinter.CTkLabel(self.sidebar_frame,text="")
+        self.chrono_labale.place(x=65, y=725)
+        chronobot_btn = customtkinter.CTkButton(
+            self.sidebar_frame,
+            text="ChronoAI",
+            font=customtkinter.CTkFont("Courier New",16, weight="bold"),
+            width=3,
+            command= self.show_Ai
+        )
+        chronobot_btn.place(x=42, y=775)
+
 
         
-
         # Weather Frame Grid Configuration
         self.weather_frame.grid_columnconfigure(0, weight=1)
         self.weather_frame.grid_columnconfigure(1, weight=1)
@@ -307,11 +310,43 @@ class App(customtkinter.CTk):
             command=self.load_weather_data
         )
         self.refresh.place(x=700, y=135)
+
+        self.load_weather_data()
         
+        self.tab_n = ["Alarm", "World Clock", "Stopwatch", "Timer"]
+
+        self.drive = Path(__file__).resolve().parent
+        img_paths = ["alarm.png", "wc.png", "stop.png", "timer.png"]
+        self.icons = [
+            customtkinter.CTkImage(light_image=Image.open(self.drive / "image" / path), size=(40, 40))
+            for path in img_paths
+        ]
 
         # Create tabview
         self.tabview1 = customtkinter.CTkTabview(self, width=500, height=650)
         self.tabview1.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
+
+        # Add tabs
+        for tab in self.tab_n:
+            self.tabview1.add(tab)
+
+        # Access tab buttons
+        self.tab_buttons = self.tabview1._segmented_button._buttons_dict
+
+        # Initial setup of buttons
+        for i, (name, btn) in enumerate(self.tab_buttons.items()):
+            btn.configure(text="", image=self.icons[i], bg_color="transparent", font=("Helvetica", 14), border_width=2, border_spacing=4)
+
+        # Show label only for the first tab
+        for i, (name, btn) in enumerate(self.tab_buttons.items()):
+            if i == 0:
+                btn.configure(text=self.tab_n[i])
+            else:
+                btn.configure(text="")
+
+        # Add command to each button
+        for i, btn in enumerate(self.tab_buttons.values()):
+            btn.configure(command=lambda tab_index=i: self.update_tabs(tab_index))
 
         self.arrow_button = customtkinter.CTkButton(self, text="❮❮",width=20,font=("Arial",20) ,command=self.toggle_side_panel)
         self.arrow_button.place(x=1018, y=145) 
@@ -332,7 +367,7 @@ class App(customtkinter.CTk):
         # side wegit
 
         Weather_img_path = Path(__file__).resolve().parent / "image" / "wea.png"
-        self.Weather_img = customtkinter.CTkImage(light_image=Image.open(Weather_img_path), size=(55, 60))
+        self.Weather_img = customtkinter.CTkImage(light_image=Image.open(Weather_img_path), size=(55, 55))
 
 
         cal_img_path = Path(__file__).resolve().parent / "image" / "cal.png"
@@ -406,9 +441,9 @@ class App(customtkinter.CTk):
 
         self.switch_var.trace_add("write", self.on_switch_toggle)
 
-        # Add tabs
-        for tab in self.tab_n:
-            self.tabview1.add(tab)
+        
+
+        
 
         self.tabview1.set("Alarm")  # Default active
         
@@ -526,25 +561,7 @@ class App(customtkinter.CTk):
         wc_tab = self.tabview1.tab("World Clock")
 
         timezone_converter = TimezoneConverter(wc_tab)
-        timezone_converter.place(x=300, y=40)
-
-        # Access tab buttons
-        self.tab_buttons = self.tabview1._segmented_button._buttons_dict
-
-        # Initial setup of buttons
-        for i, (name, btn) in enumerate(self.tab_buttons.items()):
-            btn.configure(text="", image=self.icons[i], bg_color="transparent", font=("Helvetica", 14), border_width=2, border_spacing=4)
-
-        # Show label only for the first tab
-        for i, (name, btn) in enumerate(self.tab_buttons.items()):
-            if i == 0:
-                btn.configure(text=self.tab_n[i])
-            else:
-                btn.configure(text="")
-
-        # Add command to each button
-        for i, btn in enumerate(self.tab_buttons.values()):
-            btn.configure(command=lambda tab_index=i: self.update_tabs(tab_index))
+        timezone_converter.place(x=200, y=40)
         
 
         self.appearance_mode_optionemenu.set("Dark")
@@ -567,9 +584,7 @@ class App(customtkinter.CTk):
 
     # Start preloading resources (weather, images, classes, etc.)
     def start_preloading(self):
-        self.after(100,self.load_images)
-        self.after(200,self.prepare_weather_data)
-        self.after(300,self.prepare_tabs)
+        self.prepare_weather_data()
 
 
 
@@ -580,18 +595,7 @@ class App(customtkinter.CTk):
         self.desc_var = customtkinter.StringVar(value="--")
         self.humidity_var = customtkinter.StringVar(value="Humidity: --%")
 
-    def prepare_tabs(self):
-            self.tab_n = ["Alarm", "World Clock", "Stopwatch", "Timer"]
-
-    # Load images
-    def load_images(self):
-        self.drive = Path(__file__).resolve().parent
-        img_paths = ["alarm.png", "wc.png", "stop.png", "timer.png"]
-        self.icons = [
-            customtkinter.CTkImage(light_image=Image.open(self.drive / "image" / path), size=(40, 40))
-            for path in img_paths
-        ]
-
+        
     #chatbot Frame
     def show_Ai(self):
         if hasattr(self, "chatbot_f") and self.chatbot_f and self.chatbot_f.winfo_ismapped():

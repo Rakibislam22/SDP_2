@@ -21,7 +21,7 @@ class TimerTab(ctk.CTkFrame):
         self.beep_file = Path(__file__).resolve().parent / "sound" / "beep.mp3"
 
         # Input frame
-        self.entry_frame = ctk.CTkFrame(self)
+        self.entry_frame = ctk.CTkFrame(self,fg_color="transparent")
         self.entry_frame.pack(pady=10)
 
         self.hours_entry = ctk.CTkEntry(self.entry_frame, width=60, placeholder_text="HH")
@@ -34,7 +34,7 @@ class TimerTab(ctk.CTkFrame):
         self.seconds_entry.grid(row=0, column=2, padx=5)
 
         # Preset Buttons
-        self.preset_frame = ctk.CTkFrame(self)
+        self.preset_frame = ctk.CTkFrame(self,fg_color="transparent")
         self.preset_frame.pack(pady=5)
 
         ctk.CTkButton(self.preset_frame, text="5 min", command=lambda: self.set_preset(5)).pack(side="left", padx=5)
@@ -46,11 +46,11 @@ class TimerTab(ctk.CTkFrame):
         self.canvas = ctk.CTkCanvas(self, width=200, height=200, bg=bg_color, highlightthickness=0)
         self.canvas.pack(pady=10)
         self.arc = None
-        self.canvas_text = self.canvas.create_text(100, 100, text="00:00:00", fill="white", font=("Arial", 20, "bold"))
+        self.canvas_text = self.canvas.create_text(100, 100, text="00:00:00", fill="#1F538D", font=("Arial", 20, "bold"))
 
 
         # Buttons
-        self.button_frame = ctk.CTkFrame(self)
+        self.button_frame = ctk.CTkFrame(self,fg_color="transparent")
         self.button_frame.pack(pady=10)
 
         self.start_button = ctk.CTkButton(self.button_frame, text="Start", command=self.start_timer)
@@ -62,6 +62,8 @@ class TimerTab(ctk.CTkFrame):
         self.reset_button = ctk.CTkButton(self.button_frame, text="Reset", command=self.reset_timer, state="disabled")
         self.reset_button.grid(row=0, column=2, padx=5)
 
+        self.check_a()
+
     def set_preset(self, minutes):
         self.hours_entry.delete(0, 'end')
         self.minutes_entry.delete(0, 'end')
@@ -72,6 +74,9 @@ class TimerTab(ctk.CTkFrame):
 
     def start_timer(self):
         if not self.running:
+            self.hours_entry.configure(state="disabled")
+            self.minutes_entry.configure(state="disabled")
+            self.seconds_entry.configure(state="disabled")
             try:
                 hours = int(self.hours_entry.get() or 0)
                 minutes = int(self.minutes_entry.get() or 0)
@@ -81,31 +86,32 @@ class TimerTab(ctk.CTkFrame):
                 if self.time_left <= 0:
                     #self.time_label.configure(text="Invalid Time")
                     self.canvas.itemconfigure(self.canvas_text, text="Invalid")
+                    self.after(3000,self.reset_timer)
                     return
             except ValueError:
                 #self.time_label.configure(text="Invalid Input")
                 self.canvas.itemconfigure(self.canvas_text, text="Invalid")
+                self.after(3000,self.reset_timer)
                 return
 
             self.running = True
-            self.update_buttons(start=False, pause=True, reset=True)
+            self.update_buttons(start=False, pause=True, reset=False)
             self.timer_thread = threading.Thread(target=self.run_timer)
             self.timer_thread.start()
             self.update_progress()
+            self.pause_button.configure(text="Pause")
 
     def run_timer(self):
         while self.time_left > 0 and self.running:
             mins, secs = divmod(self.time_left, 60)
             hrs, mins = divmod(mins, 60)
             time_str = f"{hrs:02}:{mins:02}:{secs:02}"
-            #self.time_label.configure(text=time_str)
             self.canvas.itemconfigure(self.canvas_text, text=time_str)
             time.sleep(1)
             self.time_left -= 1
 
         if self.time_left <= 0 and self.running:
             self.running = False
-            #self.time_label.configure(text="Time's Up!")
             self.canvas.itemconfigure(self.canvas_text, text="Time's Up!")
             self.update_buttons(start=True, pause=False, reset=True)
             self.play_beep()
@@ -123,17 +129,31 @@ class TimerTab(ctk.CTkFrame):
         self.after(500, self.update_progress)
 
     def pause_timer(self):
-        self.running = False
-        self.update_buttons(start=True, pause=False, reset=True)
+        if self.running:
+            # Pausing
+            self.running = False
+            self.pause_button.configure(text="Resume")
+            self.update_buttons(start=False, pause=True, reset=True)
+        else:
+            # Resuming
+            self.running = True
+            self.pause_button.configure(text="Pause")
+            self.update_buttons(start=False, pause=True, reset=False)
+            self.timer_thread = threading.Thread(target=self.run_timer)
+            self.timer_thread.start()
+            self.update_progress()
 
     def reset_timer(self):
+        self.hours_entry.configure(state="normal")
+        self.minutes_entry.configure(state="normal")
+        self.seconds_entry.configure(state="normal")
         self.running = False
         self.time_left = 0
         self.total_time = 0
-        #self.time_label.configure(text="00:00:00")
         self.canvas.delete("arc")
         self.canvas.itemconfigure(self.canvas_text, text="00:00:00")
         self.update_buttons(start=True, pause=False, reset=False)
+        self.pause_button.configure(text="Pause")
 
     def update_buttons(self, start, pause, reset):
         self.start_button.configure(state="normal" if start else "disabled")
@@ -151,6 +171,15 @@ class TimerTab(ctk.CTkFrame):
         if self.sound_playing:
             pygame.mixer.stop()
             self.sound_playing = False
+
+    def check_a(self):
+        if ctk.get_appearance_mode() == "Light": 
+            self.canvas.configure(bg="#E5E5E5")
+        else:
+            self.canvas.configure(bg="#212121")
+        self.after(400,self.check_a)
+
+            
 
     def show_popup(self):
         popup = ctk.CTkToplevel(self)
@@ -171,6 +200,10 @@ class TimerTab(ctk.CTkFrame):
         pos_x = main_x + (main_width // 2) - (popup_width // 2)
         pos_y = main_y + (main_height // 2) - (popup_height // 2)
         popup.geometry(f"{popup_width}x{popup_height}+{pos_x}+{pos_y}")
+
+        self.hours_entry.configure(state="normal")
+        self.minutes_entry.configure(state="normal")
+        self.seconds_entry.configure(state="normal")
 
         #Time's Up
 
@@ -195,4 +228,4 @@ class TimerTab(ctk.CTkFrame):
         update_overtime()
 
         # Stop sound and close popup
-        ctk.CTkButton(popup, text="Stop Sound", command=lambda: [self.stop_beep(), popup.destroy()]).pack(pady=10)
+        ctk.CTkButton(popup, text="Stop Sound", command=lambda: [self.stop_beep(),self.reset_timer(), popup.destroy()]).pack(pady=10)
