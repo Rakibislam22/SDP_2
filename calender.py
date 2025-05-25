@@ -7,7 +7,7 @@ import os
 EVENTS_FILE = 'events.txt'
 
 class CalendarApp(ctk.CTkFrame):
-    def __init__(self, main_frame, width=600, height=650):
+    def __init__(self, main_frame, width=600, height=620):
         super().__init__(main_frame, width=width, height=height)
         self.pack_propagate(False)  # Prevent resizing to content
 
