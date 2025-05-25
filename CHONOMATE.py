@@ -6,6 +6,7 @@ from CTkScrollableDropdown import CTkScrollableDropdown
 from pathlib import Path
 import pygame
 import chatbot 
+from calender import CalendarApp
 from alif_calculator import MultiUtilityApp
 from music import MusicPlayer
 from video_player import VideoPlayerApp
@@ -348,6 +349,8 @@ class App(customtkinter.CTk):
         for i, btn in enumerate(self.tab_buttons.values()):
             btn.configure(command=lambda tab_index=i: self.update_tabs(tab_index))
 
+        self.animate()
+
         self.arrow_button = customtkinter.CTkButton(self, text="❮❮",width=20,font=("Arial",20) ,command=self.toggle_side_panel)
         self.arrow_button.place(x=1018, y=145) 
 
@@ -369,6 +372,8 @@ class App(customtkinter.CTk):
         Weather_img_path = Path(__file__).resolve().parent / "image" / "wea.png"
         self.Weather_img = customtkinter.CTkImage(light_image=Image.open(Weather_img_path), size=(55, 55))
 
+        calendar_path = Path(__file__).resolve().parent / "image" / "calendar.png"
+        self.calendar_img = customtkinter.CTkImage(light_image=Image.open(calendar_path), size=(55, 55))
 
         cal_img_path = Path(__file__).resolve().parent / "image" / "cal.png"
         self.cal_img = customtkinter.CTkImage(light_image=Image.open(cal_img_path), size=(55, 55))
@@ -379,7 +384,7 @@ class App(customtkinter.CTk):
         video_img_path = Path(__file__).resolve().parent / "image" / "video.png"
         self.video_img = customtkinter.CTkImage(light_image=Image.open(video_img_path), size=(55, 55))
 
-        
+
         # Button to launch lonch_Weather_btn function
         self.weather_button = customtkinter.CTkButton(
         self.side_panel,
@@ -392,6 +397,21 @@ class App(customtkinter.CTk):
         hover_color="#888fba"
         )
         self.weather_button.pack(padx=5,pady=5)
+
+
+        # lonch calendar button
+        self.calendar_button = customtkinter.CTkButton(
+        self.side_panel,
+        image=self.calendar_img,
+        text="",
+        command=self.lonch_Calendar_btn,
+        width=30,
+        height=30,
+        fg_color="transparent",
+        hover_color="#888fba"
+        )
+        self.calendar_button.pack(padx=5,pady=5)
+
 
 
 
@@ -566,7 +586,6 @@ class App(customtkinter.CTk):
 
         self.appearance_mode_optionemenu.set("Dark")
         self.mode=customtkinter.get_appearance_mode()
-        self.animate()
    
     
     #track switch_var
@@ -725,6 +744,57 @@ class App(customtkinter.CTk):
         except Exception as e:
             print("Failed to load weather icon:", e)
 
+
+    def lonch_Calendar_btn(self):
+        
+        if hasattr(self, 'music') and self.music.winfo_exists():
+            self.music.grid_forget()
+        if hasattr(self, 'cal') and self.cal.winfo_exists():
+            self.cal.grid_forget() 
+        if hasattr(self, 'video') and self.video.winfo_exists():
+            self.video.grid_forget()
+
+        self.toggle_side_panel()
+
+        if not hasattr(self, 'calender_obj') or not self.calender_A.winfo_exists():
+            self.calender_A = customtkinter.CTkFrame(self)
+            self.calender_A.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
+            self.calender_obj = CalendarApp(self.calender_A)
+            self.calender_obj.pack()
+            back = customtkinter.CTkButton(
+            self.calender_A,
+            text="❮",
+            width=1,
+            font=customtkinter.CTkFont(weight="bold",size=25),
+            fg_color="transparent",
+            text_color="#4d79ff",
+            #height=8,
+            command=self.hide_calendar)
+        
+            back.place(x=30, y=15)
+            back.configure(hover=False)
+
+            # Keyboard bindings
+            for key, delta in [("<Left>", -1), ("<Right>", 1), ("<Up>", -7), ("<Down>", 7)]:
+                self.bind(key, lambda e, d=delta: self.calender_obj.move_selection(d))
+            self.focus_set()
+            
+        else:
+            self.calender_A.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
+            for key, delta in [("<Left>", -1), ("<Right>", 1), ("<Up>", -7), ("<Down>", 7)]:
+                self.bind(key, lambda e, d=delta: self.calender_obj.move_selection(d))
+            self.focus_set()
+        
+        mode = (customtkinter.get_appearance_mode()).lower()
+        self.calender_obj.mode_c(mode)
+
+    def hide_calendar(self):
+        if hasattr(self, 'calender_A') and self.calender_A.winfo_exists():
+            self.calender_A.grid_forget()
+
+            # Unbind previously set keys
+            for key in ["<Left>", "<Right>", "<Up>", "<Down>"]:
+                self.unbind(key)
     
 
     def lonch_cal_btn(self):
@@ -732,6 +802,8 @@ class App(customtkinter.CTk):
             self.music.grid_forget()
         if hasattr(self, 'video') and self.video.winfo_exists():
             self.video.grid_forget()
+        if hasattr(self, 'calender_obj') and self.calender_A.winfo_exists():
+            self.hide_calendar()
 
         self.toggle_side_panel()
 
@@ -766,6 +838,8 @@ class App(customtkinter.CTk):
             self.cal.grid_forget() 
         if hasattr(self, 'video') and self.video.winfo_exists():
             self.video.grid_forget()
+        if hasattr(self, 'calender_obj') and self.calender_A.winfo_exists():
+            self.hide_calendar()
 
         self.toggle_side_panel()
 
@@ -798,6 +872,8 @@ class App(customtkinter.CTk):
 
         if hasattr(self, 'music') and self.music.winfo_exists():
             self.music.grid_forget()
+        if hasattr(self, 'calender_obj') and self.calender_A.winfo_exists():
+            self.hide_calendar()
 
         self.toggle_side_panel()
 
@@ -875,6 +951,9 @@ class App(customtkinter.CTk):
         if hasattr(self, 'calculator_app') and self.cal.winfo_exists() :
             m = (new_appearance_mode).lower()
             self.calculator_app.change_mode(m)
+        if hasattr(self, 'calender_obj') and self.calender_A.winfo_exists():
+            n = (new_appearance_mode).lower()
+            self.calender_obj.mode_c(n)
             
         customtkinter.set_appearance_mode(new_appearance_mode)
 
