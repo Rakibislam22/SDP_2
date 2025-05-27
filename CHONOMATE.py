@@ -13,6 +13,10 @@ from video_player import VideoPlayerApp
 from WorldC_Clock import TimezoneConverter
 from sound_popup import SoundPopup
 from timer import TimerTab
+from stopwatch import StopwatchFrame
+from weather import WeatherWidget
+from tic_tac_tao import launch_tictactoe  # At the top of the file
+from rps import RockPaperScissorsApp
 from PIL import Image, ImageTk, ImageSequence
 from io import BytesIO
 import threading
@@ -384,13 +388,19 @@ class App(customtkinter.CTk):
         video_img_path = Path(__file__).resolve().parent / "image" / "video.png"
         self.video_img = customtkinter.CTkImage(light_image=Image.open(video_img_path), size=(55, 55))
 
+        tic_tac_path = Path(__file__).resolve().parent / "image" / "tic.png"
+        self.tic_tac_img = customtkinter.CTkImage(light_image=Image.open(tic_tac_path), size=(50, 50))
+
+        rock_path = Path(__file__).resolve().parent / "image" / "rock.png"
+        self.rock_img = customtkinter.CTkImage(light_image=Image.open(rock_path), size=(55, 55))
+
 
         # Button to launch lonch_Weather_btn function
         self.weather_button = customtkinter.CTkButton(
         self.side_panel,
         image=self.Weather_img,
         text="",
-        
+        command=self.launch_weather_btn,
         width=30,
         height=30,
         fg_color="transparent",
@@ -455,6 +465,32 @@ class App(customtkinter.CTk):
         )
         self.video_button.pack(padx=5,pady=5)
 
+        # Button to launch lonch_tictactoe_btn function
+        self.video_button = customtkinter.CTkButton(
+        self.side_panel,
+        image=self.tic_tac_img,
+        text="",
+        command=self.lonch_tictactoe_btn,
+        width=30,
+        height=30,
+        fg_color="transparent",
+        hover_color="#888fba"
+        )
+        self.video_button.pack(padx=5,pady=5)
+
+        # Button to launch lonch_tictactoe_btn function
+        self.video_button = customtkinter.CTkButton(
+        self.side_panel,
+        image=self.rock_img,
+        text="",
+        command=self.launch_rps_btn,
+        width=30,
+        height=30,
+        fg_color="transparent",
+        hover_color="#888fba"
+        )
+        self.video_button.pack(padx=5,pady=5)
+
 
         self.side_panel_open = False
 
@@ -475,6 +511,10 @@ class App(customtkinter.CTk):
         #timer.place(x=200,y=60)
         timer_widget = TimerTab(timer_tab)
         timer_widget.place(x=200, y=60)
+
+        stopWatch = self.tabview1.tab("Stopwatch")
+        stop_widget = StopwatchFrame(stopWatch)
+        stop_widget.place(x=200, y=60)
 
         
 
@@ -744,6 +784,49 @@ class App(customtkinter.CTk):
         except Exception as e:
             print("Failed to load weather icon:", e)
 
+    def launch_weather_btn(self):
+        if hasattr(self, 'cal') and self.cal.winfo_exists():
+            self.cal.grid_forget()
+
+        if hasattr(self, 'music') and self.music.winfo_exists():
+            self.music.grid_forget()
+        if hasattr(self, 'video') and self.video.winfo_exists():
+            self.video.grid_forget()
+
+        if hasattr(self, 'calender_obj') and self.calender_A.winfo_exists():
+            self.hide_calendar()
+
+        if hasattr(self, 'tictactoe') and self.frameD.winfo_exists():
+            self.stop_music()
+            self.frameD.destroy()
+        if hasattr(self, 'rps_frame') and self.rps_frame.winfo_exists():
+            self.stop_music()
+            self.rps_frame.destroy()
+
+        self.toggle_side_panel()
+
+        if not hasattr(self, 'weather') or not self.weather.winfo_exists():
+            self.weather = customtkinter.CTkFrame(self)
+            self.weather.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
+
+            self.weather_widget = WeatherWidget(self.weather)
+            self.weather_widget.pack(padx=20, pady=20)
+
+            back = customtkinter.CTkButton(
+                self.weather,
+                text="❮",
+                width=1,
+                font=customtkinter.CTkFont(weight="bold", size=25),
+                fg_color="transparent",
+                text_color="#4d79ff",
+                command=lambda: self.weather.grid_forget()
+            )
+            back.place(x=30, y=15)
+            back.configure(hover=False)
+        else:
+            self.weather.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
+
+
 
     def lonch_Calendar_btn(self):
         
@@ -753,6 +836,14 @@ class App(customtkinter.CTk):
             self.cal.grid_forget() 
         if hasattr(self, 'video') and self.video.winfo_exists():
             self.video.grid_forget()
+        if hasattr(self, 'tictactoe') and self.frameD.winfo_exists():
+            self.stop_music()
+            self.frameD.destroy()
+        if hasattr(self, 'weather') and self.weather.winfo_exists():
+            self.weather.grid_forget()
+        if hasattr(self, 'rps_frame') and self.rps_frame.winfo_exists():
+            self.stop_music()
+            self.rps_frame.destroy()
 
         self.toggle_side_panel()
 
@@ -804,6 +895,14 @@ class App(customtkinter.CTk):
             self.video.grid_forget()
         if hasattr(self, 'calender_obj') and self.calender_A.winfo_exists():
             self.hide_calendar()
+        if hasattr(self, 'tictactoe') and self.frameD.winfo_exists():
+            self.stop_music()
+            self.frameD.destroy()
+        if hasattr(self, 'weather') and self.weather.winfo_exists():
+            self.weather.grid_forget()
+        if hasattr(self, 'rps_frame') and self.rps_frame.winfo_exists():
+            self.stop_music()
+            self.rps_frame.destroy()
 
         self.toggle_side_panel()
 
@@ -840,6 +939,14 @@ class App(customtkinter.CTk):
             self.video.grid_forget()
         if hasattr(self, 'calender_obj') and self.calender_A.winfo_exists():
             self.hide_calendar()
+        if hasattr(self, 'tictactoe') and self.frameD.winfo_exists():
+            self.stop_music()
+            self.frameD.destroy()
+        if hasattr(self, 'weather') and self.weather.winfo_exists():
+            self.weather.grid_forget()
+        if hasattr(self, 'rps_frame') and self.rps_frame.winfo_exists():
+            self.stop_music()
+            self.rps_frame.destroy()
 
         self.toggle_side_panel()
 
@@ -874,6 +981,14 @@ class App(customtkinter.CTk):
             self.music.grid_forget()
         if hasattr(self, 'calender_obj') and self.calender_A.winfo_exists():
             self.hide_calendar()
+        if hasattr(self, 'tictactoe') and self.frameD.winfo_exists():
+            self.stop_music()
+            self.frameD.destroy()
+        if hasattr(self, 'weather') and self.weather.winfo_exists():
+            self.weather.grid_forget()
+        if hasattr(self, 'rps_frame') and self.rps_frame.winfo_exists():
+            self.stop_music()
+            self.rps_frame.destroy()
 
         self.toggle_side_panel()
 
@@ -899,7 +1014,118 @@ class App(customtkinter.CTk):
             self.video.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
 
 
+    def lonch_tictactoe_btn(self):
+        # Hide other panels
+        if hasattr(self, 'cal') and self.cal.winfo_exists():
+            self.cal.grid_forget()
+        if hasattr(self, 'music') and self.music.winfo_exists():
+            self.music.grid_forget()
+        if hasattr(self, 'video') and self.video.winfo_exists():
+            self.video.grid_forget()
+        if hasattr(self, 'calender_obj') and self.calender_A.winfo_exists():
+            self.hide_calendar()
+        if hasattr(self, 'weather') and self.weather.winfo_exists():
+            self.weather.grid_forget()
+        if hasattr(self, 'tictactoe') and self.frameD.winfo_exists():
+            self.frameD.destroy()
+            self.stop_music()
 
+        self.toggle_side_panel()
+
+        # Create the game container frame
+        self.frameD = customtkinter.CTkFrame(self)
+        self.frameD.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
+        
+        self.tictactoe = customtkinter.CTkFrame(self.frameD)
+        self.tictactoe.pack()
+
+        # Show loading label
+        loading = customtkinter.CTkLabel(
+            self.tictactoe,
+            text="Loading Game...",
+            font=customtkinter.CTkFont(weight="bold", size=30)
+        )
+        loading.pack(pady=300)
+
+        def load_game():
+            loading.destroy()  # Remove the loading label
+            self.tictactoe_app = launch_tictactoe(self.tictactoe)  # Launch your game widget
+            
+            # Add back button to close the game
+            back = customtkinter.CTkButton(
+                self.frameD,
+                text="❮",
+                width=1,
+                font=customtkinter.CTkFont(weight="bold", size=25),
+                fg_color="transparent",
+                text_color="#4d79ff",
+                command=lambda: (self.stop_music(), self.tictactoe.destroy(), self.frameD.destroy())
+            )
+            back.place(x=30, y=15)
+            back.configure(hover=False)
+
+        # Delay actual loading so UI can render loading label first
+        self.after(300, load_game)  # 3 seconds delay
+
+
+
+    def launch_rps_btn(self):
+        # Hide other panels
+        if hasattr(self, 'cal') and self.cal.winfo_exists():
+            self.cal.grid_forget()
+        if hasattr(self, 'music') and self.music.winfo_exists():
+            self.music.grid_forget()
+        if hasattr(self, 'video') and self.video.winfo_exists():
+            self.video.grid_forget()
+        if hasattr(self, 'calender_obj') and self.calender_A.winfo_exists():
+            self.hide_calendar()
+        if hasattr(self, 'weather') and self.weather.winfo_exists():
+            self.weather.grid_forget()
+        if hasattr(self, 'tictactoe') and self.frameD.winfo_exists():
+            self.frameD.destroy()
+            self.stop_music()
+
+        self.toggle_side_panel()
+
+        # Create container frame for RPS
+        self.rps_frame = customtkinter.CTkFrame(self)
+        self.rps_frame.grid(row=1, column=1, padx=(20, 0), pady=(30, 0), sticky="nsew")
+
+        self.rps = customtkinter.CTkFrame(self.rps_frame)
+        self.rps.pack()
+
+        # Show loading label
+        loading = customtkinter.CTkLabel(
+            self.rps,
+            text="Loading Rock Paper Scissors...",
+            font=customtkinter.CTkFont(weight="bold", size=30)
+        )
+        loading.pack(pady=300)
+
+        def load_rps_game():
+            loading.destroy()  # Remove loading text
+            # Launch your RPS widget/game inside self.rps frame
+            self.rps_app = RockPaperScissorsApp(self.rps)  # You should have this function implemented
+
+            # Back button to close RPS panel
+            back = customtkinter.CTkButton(
+                self.rps_frame,
+                text="❮",
+                width=1,
+                font=customtkinter.CTkFont(weight="bold", size=25),
+                fg_color="transparent",
+                text_color="#4d79ff",
+                command=lambda:  (self.stop_music(),self.rps_frame.destroy())
+            )
+            back.place(x=30, y=15)
+            back.configure(hover=False)
+
+        # Delay loading so UI can show loading label first
+        self.after(3000, load_rps_game)
+
+
+    def stop_music(self):
+        pygame.mixer.music.stop()
 
 
     # toggle side panel

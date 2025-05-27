@@ -94,7 +94,7 @@ class CalendarApp(ctk.CTkFrame):
                         btn.configure(border_width=3, border_color="#95A508")
 
                     btn.configure(
-                        text_color=("red" if c in [5, 6] else self.default_text_color),
+                        text_color=("red" if c in [4, 5] else self.default_text_color),
                         font=("Arial", 15),
                         hover=False
                     )

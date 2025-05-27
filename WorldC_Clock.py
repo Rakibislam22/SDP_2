@@ -13,7 +13,7 @@ class TimezoneConverter(ctk.CTkFrame):
         self.main_frame.pack_propagate(False)  # Prevent shrinking to fit contents
 
         # Title Label
-        self.label_title = ctk.CTkLabel(self.main_frame, text="Timezone", font=("Arial", 18, "bold"))
+        self.label_title = ctk.CTkLabel(self.main_frame, text="Timezone", font=("Helvetica", 22, "bold"))
         self.label_title.pack(pady=(0, 30))
 
         # Entry Frame for input and button
@@ -23,9 +23,13 @@ class TimezoneConverter(ctk.CTkFrame):
         self.region = pytz.all_timezones
 
         # Dropdown for regions
-        self.entry_region = ctk.CTkComboBox(entry_frame, values=self.region, width=150)
-        self.entry_region.set("Select Region")
+        self.entry_region = ctk.CTkLabel(entry_frame,text="Select Timezone :",font=ctk.CTkFont("Helvetica", 16))
         self.entry_region.pack(side="left", padx=5)
+        self.entry_region = ctk.CTkEntry(entry_frame, width=170)
+        self.entry_region.pack(side="left", padx=5)
+
+        CTkScrollableDropdown(self.entry_region, values=self.region, command=lambda e: (self.entry_region.delete(0, 'end'), self.entry_region.insert(0, e)),
+                      autocomplete=True)
 
         # Scrollable dropdown behavior
         CTkScrollableDropdown(self.entry_region, values=self.region)
@@ -51,5 +55,5 @@ class TimezoneConverter(ctk.CTkFrame):
         time_str = self.get_time_in_timezone(region)
         self.label_output.configure(
             text=f"\n{region}\n\n{time_str}",
-            text_color="red" if "Invalid" in time_str else "white"
+            text_color="red" if "Invalid" in time_str else "green"
         )
