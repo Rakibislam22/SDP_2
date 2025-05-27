@@ -40,8 +40,6 @@ class RockPaperScissorsApp:
         self.round_wins = {'player': 0, 'computer': 0}
         self.player_name = None
 
-        ctk.set_appearance_mode("dark")
-        ctk.set_default_color_theme("blue")
 
         self.welcome_background_canvas = ctk.CTkCanvas(self.root, width=200, height=50, bg="#1C2526", highlightthickness=0)
         self.welcome_background_canvas.pack(fill="both", expand=True, pady=(20,0))
