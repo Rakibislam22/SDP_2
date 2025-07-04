@@ -19,6 +19,7 @@ from tic_tac_tao import launch_tictactoe  # At the top of the file
 from rps import RockPaperScissorsApp
 from PIL import Image, ImageTk, ImageSequence
 from io import BytesIO
+from tkinter import messagebox
 import threading
 import os
 import warnings
@@ -101,7 +102,23 @@ class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
         self.title("ChronoMate")
-        self.geometry("1060x870")
+        desired_width = 1060
+        desired_height = 870
+
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+
+        if screen_width >= desired_width and screen_height >= desired_height:
+            # Safe to set
+            x = (screen_width // 2) - (desired_width // 2)
+            y = (screen_height // 2) - (desired_height // 2)
+            self.geometry(f"{desired_width}x{desired_height}+{x}+{y}")
+        else:
+            # Screen too small: set fullscreen or warning
+            messagebox.showwarning("Screen too small",
+                                   "Your screen resolution is smaller than 1060x870.\nSwitching to fullscreen mode.")
+            self.attributes("-fullscreen", True)
+        self.resizable(False,False)
         self.show_welcome()
 
         self.after(200,self.start_preloading)

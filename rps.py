@@ -321,15 +321,6 @@ class RockPaperScissorsApp:
             self.start_game_button.pack(side='left', padx=10)
             #print("Start game button created")
 
-            self.exit_button = self.create_glowing_button(self.start_button_container_frame,
-                                         "Exit",
-                                         self.exit_game,
-                                         "#FF0000",
-                                         "#B71C1C",
-                                         width=150,
-                                         height=40)
-            self.exit_button.pack(side='right', padx=10)
-            #print("Exit button created")
 
             self.welcome_gesture_icon = self.welcome_background_canvas.create_text(self.welcome_background_canvas.winfo_width() / 2,
                                                            self.welcome_background_canvas.winfo_height() * 0.2,
@@ -589,15 +580,7 @@ class RockPaperScissorsApp:
                                                 height=40)
         self.reset_game_button.pack(side='left', expand=True, padx=30)
 
-        self.exit_game_button = self.create_glowing_button(self.control_buttons_container_frame,
-                                               "Exit",
-                                               self.exit_game,
-                                               "#FF0000",
-                                               "#B71C1C",
-                                               width=100,
-                                               height=40)
-        self.exit_game_button.pack(side='right', expand=True, padx=30)
-        #print("Control buttons panel setup complete")
+        
 
     def setup_commentator(self):
         self.commentator_text_label = ctk.CTkLabel(self.main_container_frame,
@@ -1012,24 +995,7 @@ class RockPaperScissorsApp:
         except TclError:
             pass
 
-    def exit_game(self):
-        try:
-            #print("exit_game called")
-            confirm = messagebox.askyesno("Exit Game", "Sure you want to quit? 😢")
-            if confirm:
-                self.cancel_animations()
-                self.is_running = False
-                self.stop_background_music()
-                self.clear_main_ui()
-                try:
-                    self.root.destroy()
-                    #print("Application closed")
-                except TclError as e:
-                    pass#print(f"TclError during root.destroy: {e}")
-        except TclError as e:
-            pass#print(f"TclError in exit_game: {e}")
-        except Exception as e:
-            pass#print(f"Error in exit_game: {e}")
+    
 
 # if __name__ == "__main__":
 #     try:
