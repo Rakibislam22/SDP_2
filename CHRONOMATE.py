@@ -119,6 +119,9 @@ class App(customtkinter.CTk):
                                    "Your screen resolution is smaller than 1060x870.\nSwitching to fullscreen mode.")
             self.attributes("-fullscreen", True)
         self.resizable(False,False)
+
+        self.iconbitmap('image/chronomate.ico')
+
         self.show_welcome()
 
         self.after(200,self.start_preloading)

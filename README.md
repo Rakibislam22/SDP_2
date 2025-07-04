@@ -79,8 +79,8 @@ ChronoMate uses `.env` to store API keys.
 Create a `.env` file in the root directory with:
 
 ```env
-OPENWEATHER_API_KEY= your_openweathermap_key
-GEMINI_API_KEY= your_gemini_key
+W_API_KEY== your_openweathermap_key
+G_API_KEY== your_gemini_key
 ```
 
 You can encrypt this file or use environment variables to prevent unauthorized access.
