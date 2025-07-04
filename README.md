@@ -2,7 +2,7 @@
 
 **An All-in-One Utility and Productivity Desktop Application**
 
-![ChronoMate Logo](![https://github.com/Rakibislam22/SDP_2/image/chronomate.png](https://github.com/Rakibislam22/SDP_2/blob/main/image/chronomate.png)) <!-- Optional image -->
+![ChronoMate Logo](https://github.com/Rakibislam22/SDP_2/image/chronomate.png) <!-- Optional image -->
 
 ## 🔹 Overview
 
