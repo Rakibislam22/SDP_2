@@ -115,12 +115,12 @@ You can encrypt this file or use environment variables to prevent unauthorized a
 
 ## 🧑‍💻 Developers
 
-| Name                   | ID           | Role         |
-|------------------------|--------------|--------------|
-| Jubaer Rahman          | 20234103385  | UI, Testing  |
-| Md. Ismail Hossain     | 20234103389  | API, Back-end|
-| Pranta Kumer Pandit    | 20234103390  | AI Integration |
-| Md Jobaer Islam Alif   | 20234103391  | Media Player |
+| Name                   | ID           | Role          |
+|------------------------|--------------|---------------|
+| Jubaer Rahman          | 20234103385  | Calender      |
+| Md. Ismail Hossain     | 20234103389  | Media Player  |
+| Pranta Kumer Pandit    | 20234103390  | Games         |
+| Md Jobaer Islam Alif   | 20234103391  | Utility, AI   |
 | **Md Rakib Ali**       | 20234103396  | Lead Dev, Integration |
 
 ---
